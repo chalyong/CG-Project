@@ -15,12 +15,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="midtest.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="13_sub.cpp">
+    <ClInclude Include="buffer.cpp">
       <Filter>소스 파일</Filter>
     </ClInclude>
   </ItemGroup>

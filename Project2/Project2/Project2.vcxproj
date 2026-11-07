@@ -140,10 +140,10 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="midtest.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="13_sub.cpp" />
+    <ClInclude Include="buffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment2.glsl" />
