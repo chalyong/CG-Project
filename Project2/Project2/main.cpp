@@ -8,13 +8,13 @@
 #include <string>
 #include <time.h>
 #include <cstring>
+#include <cmath>
 
 #include "buffer.cpp"
 
 using namespace std;
 
 #define FILE_NAME "cube.obj_19.txt"
-#define TIME 0.02
 
 //--- 사용자 정의 함수
 void make_vertexShaders();
@@ -36,8 +36,8 @@ float lData[] = {
 -6.0f, -1.0f, 6.0f,
 
 6.0f, -1.0f, -6.0f,
--6.0f, -1.0f, 6.0f,
--6.0f, -1.0f, -6.0f
+-6.0f, -1.0f, -6.0f,
+-6.0f, -1.0f, 6.0f
 };
 float lCr[] = {
 0.0f, 0.8f, 0.0f,
@@ -62,6 +62,14 @@ crBl[3] = { 0.0f, 0.0f, 0.0f };
 
 int mx, my;
 int clicked;
+
+//--- 마우스 시점 회전 상태
+float yaw = 0.0f;
+float pitch = 0.0f;
+double mouseDx = 0.0, mouseDy = 0.0;
+const float SENS = 0.0015f;
+const float PITCH_LIMIT = glm::radians(90.0f);
+const float TWO_PI = 6.28318530718f;
 
 // 투영 행렬 제작
 glm::mat4 projection = glm::perspective(
@@ -122,15 +130,14 @@ void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 
 void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 {
-	double x, y;
-	glfwGetCursorPos(window, &x, &y);
-	x -= width / 2;
-	y = -y + height / 2;
-	x /= width / 2;
-	y /= height / 2;
+	if (!glfwGetWindowAttrib(window, GLFW_FOCUSED)) return;
 
-	if (clicked) {
-	}
+	int ww, wh;
+	glfwGetWindowSize(window, &ww, &wh);
+
+	// 포인터는 항상 중앙에 있다고 가정하고 중앙 기준 이동량만 누적
+	mouseDx += xpos - ww / 2.0;
+	mouseDy += wh / 2.0 - ypos;
 }
 
 //--- 메인 함수
@@ -189,11 +196,35 @@ int main(int argc, char** argv)
 
 
 	//--- 렌더링 루프
+	bool wasFocused = false;
 	while (!glfwWindowShouldClose(window))
 	{
+		glfwPollEvents();
+
+		bool focused = glfwGetWindowAttrib(window, GLFW_FOCUSED) != 0;
+		if (focused && !wasFocused) {
+			mouseDx = mouseDy = 0.0;
+		}
+		wasFocused = focused;
+
+		if (focused) {
+			yaw += (float)mouseDx * SENS;
+			pitch += (float)mouseDy * SENS;
+
+			// 좌우는 무제한, 상하는 수직 위/바닥까지
+			yaw = fmodf(yaw, TWO_PI);
+			pitch = glm::clamp(pitch, -PITCH_LIMIT, PITCH_LIMIT);
+		}
+		mouseDx = mouseDy = 0.0;
+
 		drawScene();
 		glfwSwapBuffers(window);
-		glfwPollEvents();
+
+		if (focused) {
+			int ww, wh;
+			glfwGetWindowSize(window, &ww, &wh);
+			glfwSetCursorPos(window, ww / 2.0, wh / 2.0);
+		}
 	}
 	glfwDestroyWindow(window);
 	glfwTerminate();
@@ -285,12 +316,16 @@ void InitBuffer(const char* shapePath)
 //--- 출력 함수
 GLvoid drawScene()
 {
-	// 회전 타이머
-	if (glfwGetTime() > TIME) {
+	//--- 마우스 시점으로 view 갱신
+	float cp = cosf(pitch), sp = sinf(pitch);
+	float cy = cosf(yaw), sy = sinf(yaw);
 
+	glm::vec3 dir(-cp * sy, sp, cp * cy);
+	glm::vec3 up(sp * sy, cp, -sp * cy);
 
-		glfwSetTime(0.0);
-	}
+	eye = glm::vec3(0.0f);
+	at = eye + dir;              // 반지름 1
+	view = glm::lookAt(eye, at, up);
 
 
 	//--- 배경색 설정
@@ -314,6 +349,8 @@ GLvoid drawScene()
 	//glFrontFace(GL_CCW);
 	glEnable(GL_DEPTH_TEST);
 
+	glUniform3f(colorLocation, 1.0f, 1.0f, 1.0f);
+
 	// txt 단위 큐브
 	{
 		glBindVertexArray(VAO_o);
@@ -321,8 +358,6 @@ GLvoid drawScene()
 		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(mvp));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
-
-	glUniform3f(colorLocation, 1.0f, 1.0f, 1.0f);
 
 	// 바닥 넓은 평면
 	{
