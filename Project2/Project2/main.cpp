@@ -12,6 +12,7 @@
 
 #include "buffer.cpp"
 #include "mouse_move.h"
+#include "player.h"
 
 using namespace std;
 
@@ -29,6 +30,8 @@ GLint width = 1000, height = 1000;
 GLuint shaderProgramID;
 GLuint vertexShader;
 GLuint fragmentShader;
+
+Player player;
 
 GLuint VAO_l, VBO_lD, VBO_lC;
 float lData[] = {
@@ -54,7 +57,8 @@ int lCnt = 18;
 GLuint VAO_o, VBO_oD, VBO_oC;
 
 //변환 행렬 제작
-glm::mat4 centerMat(1.0f);
+glm::mat4 centerMat(1.0f), modelPlayer(1.0f);
+glm::mat4 sizePlayer = glm::scale(modelPlayer, glm::vec3(2.0f, 2.0f, 2.0f));
 
 float crR[3] = { 0.9f, 0.0f, 0.0f }, crG[3] = { 0.0f,0.9f,0.0f }, crB[3] = { 0.0f, 0.0f, 0.9f },
 crC[3] = { 0.0f, 0.9f, 0.9f }, crY[3] = { 0.9f, 0.9f, 0.0f }, crM[3] = { 0.9f, 0.0f, 0.9f },
@@ -303,7 +307,7 @@ GLvoid drawScene()
 	// txt 단위 큐브
 	{
 		glBindVertexArray(VAO_o);
-		mvp = proj * view * centerMat;
+		mvp = proj * view * modelPlayer * sizePlayer;
 		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(mvp));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}

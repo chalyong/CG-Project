@@ -3,7 +3,6 @@
 #include <cmath>
 #include <gl/glm/gtc/matrix_transform.hpp>
 
-namespace {
 
 float yaw = 0.0f;
 float pitch = 0.0f;
