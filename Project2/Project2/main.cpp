@@ -11,6 +11,7 @@
 #include <cmath>
 
 #include "buffer.cpp"
+#include "mouse_move.h"
 
 using namespace std;
 
@@ -63,14 +64,6 @@ crBl[3] = { 0.0f, 0.0f, 0.0f };
 int mx, my;
 int clicked;
 
-//--- 마우스 시점 회전 상태
-float yaw = 0.0f;
-float pitch = 0.0f;
-double mouseDx = 0.0, mouseDy = 0.0;
-const float SENS = 0.0015f;
-const float PITCH_LIMIT = glm::radians(90.0f);
-const float TWO_PI = 6.28318530718f;
-
 // 투영 행렬 제작
 glm::mat4 projection = glm::perspective(
 	glm::radians(45.0f),                        // fovy
@@ -82,8 +75,7 @@ glm::mat4 orthoProj = glm::ortho(
 	-8.0f, 8.0f,
 	0.1f, 100.0f);
 
-glm::vec3 eye(0.0f, 0.0f, 0.0f), at(0, 0, 1), upv(0, 1, 0);
-glm::mat4 view = glm::lookAt(eye, at, upv);
+glm::mat4 view = glm::mat4(1.0f);
 
 //--- 파일에서 셰이더 코드 읽어오기
 string filetobuf(const char* file)
@@ -126,18 +118,6 @@ void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 		}
 	}
 
-}
-
-void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
-{
-	if (!glfwGetWindowAttrib(window, GLFW_FOCUSED)) return;
-
-	int ww, wh;
-	glfwGetWindowSize(window, &ww, &wh);
-
-	// 포인터는 항상 중앙에 있다고 가정하고 중앙 기준 이동량만 누적
-	mouseDx += xpos - ww / 2.0;
-	mouseDy += wh / 2.0 - ypos;
 }
 
 //--- 메인 함수
@@ -192,39 +172,17 @@ int main(int argc, char** argv)
 	//--- 콜백 함수 등록
 	glfwSetKeyCallback(window, KeyCallback);
 	glfwSetMouseButtonCallback(window, MouseButtonCallback);
-	glfwSetCursorPosCallback(window, CursorPosCallback);
+	InitMouseMove(window);
 
 
 	//--- 렌더링 루프
-	bool wasFocused = false;
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
-
-		bool focused = glfwGetWindowAttrib(window, GLFW_FOCUSED) != 0;
-		if (focused && !wasFocused) {
-			mouseDx = mouseDy = 0.0;
-		}
-		wasFocused = focused;
-
-		if (focused) {
-			yaw += (float)mouseDx * SENS;
-			pitch += (float)mouseDy * SENS;
-
-			// 좌우는 무제한, 상하는 수직 위/바닥까지
-			yaw = fmodf(yaw, TWO_PI);
-			pitch = glm::clamp(pitch, -PITCH_LIMIT, PITCH_LIMIT);
-		}
-		mouseDx = mouseDy = 0.0;
+		UpdateMouseMove(window);
 
 		drawScene();
 		glfwSwapBuffers(window);
-
-		if (focused) {
-			int ww, wh;
-			glfwGetWindowSize(window, &ww, &wh);
-			glfwSetCursorPos(window, ww / 2.0, wh / 2.0);
-		}
 	}
 	glfwDestroyWindow(window);
 	glfwTerminate();
@@ -316,16 +274,7 @@ void InitBuffer(const char* shapePath)
 //--- 출력 함수
 GLvoid drawScene()
 {
-	//--- 마우스 시점으로 view 갱신
-	float cp = cosf(pitch), sp = sinf(pitch);
-	float cy = cosf(yaw), sy = sinf(yaw);
-
-	glm::vec3 dir(-cp * sy, sp, cp * cy);
-	glm::vec3 up(sp * sy, cp, -sp * cy);
-
-	eye = glm::vec3(0.0f);
-	at = eye + dir;              // 반지름 1
-	view = glm::lookAt(eye, at, up);
+	view = GetMouseMoveView();
 
 
 	//--- 배경색 설정

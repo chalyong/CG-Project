@@ -141,9 +141,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="mouse_move.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="buffer.cpp" />
+    <ClInclude Include="mouse_move.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment2.glsl" />
