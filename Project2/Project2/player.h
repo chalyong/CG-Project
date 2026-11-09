@@ -16,4 +16,6 @@ public:
 
 	// À§Ä¡
 	float x, y, z;
+	float moveSpeed;
+	void Move(int dirF, int dirS, float yaw, float deltaTime);
 };

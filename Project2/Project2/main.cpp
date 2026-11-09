@@ -17,6 +17,7 @@
 using namespace std;
 
 #define FILE_NAME "cube.obj_19.txt"
+#define TIME 0.02
 
 //--- 사용자 정의 함수
 void make_vertexShaders();
@@ -32,6 +33,8 @@ GLuint vertexShader;
 GLuint fragmentShader;
 
 Player player;
+int dir_f, dir_s;
+bool keyW = false, keyS = false, keyA = false, keyD = false;
 
 GLuint VAO_l, VBO_lD, VBO_lC;
 float lData[] = {
@@ -100,6 +103,10 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 	}
+	if (key == GLFW_KEY_W) keyW = (action != GLFW_RELEASE);
+	if (key == GLFW_KEY_S) keyS = (action != GLFW_RELEASE);
+	if (key == GLFW_KEY_A) keyA = (action != GLFW_RELEASE);
+	if (key == GLFW_KEY_D) keyD = (action != GLFW_RELEASE);
 }
 
 void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
@@ -178,12 +185,27 @@ int main(int argc, char** argv)
 	glfwSetMouseButtonCallback(window, MouseButtonCallback);
 	InitMouseMove(window);
 
-
 	//--- 렌더링 루프
+	double prevTime = glfwGetTime();
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
 		UpdateMouseMove(window);
+
+		double now = glfwGetTime();
+		float dt = (float)(now - prevTime);
+		prevTime = now;
+		if (dt > 0.1f) dt = 0.1f;
+
+		bool focused = glfwGetWindowAttrib(window, GLFW_FOCUSED) != 0;
+
+		int dir_f = 0, dir_s = 0;
+		if (focused) {
+			dir_f = (keyW ? 1 : 0) - (keyS ? 1 : 0);
+			dir_s = (keyD ? 1 : 0) - (keyA ? 1 : 0);
+		}
+
+		player.Move(dir_f, dir_s, GetMouseMoveYaw(), dt);
 
 		drawScene();
 		glfwSwapBuffers(window);
@@ -277,9 +299,8 @@ void InitBuffer(const char* shapePath)
 
 //--- 출력 함수
 GLvoid drawScene()
-{
-	view = GetMouseMoveView();
-
+{	
+	view = GetMouseMoveView(glm::vec3(player.x, player.y, player.z));
 
 	//--- 배경색 설정
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);

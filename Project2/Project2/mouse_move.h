@@ -5,4 +5,5 @@
 
 void InitMouseMove(GLFWwindow* window);
 void UpdateMouseMove(GLFWwindow* window);
-glm::mat4 GetMouseMoveView();
+float GetMouseMoveYaw();
+glm::mat4 GetMouseMoveView(const glm::vec3& eyePosition);

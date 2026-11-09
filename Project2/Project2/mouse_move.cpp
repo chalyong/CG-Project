@@ -3,17 +3,17 @@
 #include <cmath>
 #include <gl/glm/gtc/matrix_transform.hpp>
 
+namespace {
+	float yaw = 0.0f;
+	float pitch = 0.0f;
+	double mouseDx = 0.0, mouseDy = 0.0;
 
-float yaw = 0.0f;
-float pitch = 0.0f;
-double mouseDx = 0.0, mouseDy = 0.0;
+	const float SENS = 0.0015f;
+	const float PITCH_LIMIT = glm::radians(90.0f);
+	const float TWO_PI = 6.28318530718f;
 
-const float SENS = 0.0015f;
-const float PITCH_LIMIT = glm::radians(90.0f);
-const float TWO_PI = 6.28318530718f;
-
-bool wasFocused = false;
-
+	bool wasFocused = false;
+}
 void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (!glfwGetWindowAttrib(window, GLFW_FOCUSED)) return;
@@ -62,12 +62,17 @@ void UpdateMouseMove(GLFWwindow* window)
 	}
 }
 
-glm::mat4 GetMouseMoveView()
+float GetMouseMoveYaw()
+{
+	return yaw;
+}
+
+glm::mat4 GetMouseMoveView(const glm::vec3& eyePosition)
 {
 	float cp = cosf(pitch), sp = sinf(pitch);
 	float cy = cosf(yaw), sy = sinf(yaw);
 
-	glm::vec3 eye(0.0f);
+	glm::vec3 eye = eyePosition;
 	glm::vec3 dir(-cp * sy, sp, cp * cy);
 	glm::vec3 up(sp * sy, cp, -sp * cy);
 	glm::vec3 at = eye + dir;
