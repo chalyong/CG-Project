@@ -60,13 +60,8 @@ crC[3] = { 0.0f, 0.9f, 0.9f }, crY[3] = { 0.9f, 0.9f, 0.0f }, crM[3] = { 0.9f, 0
 crLg[3] = { 0.7f, 0.7f, 0.7f }, crDg[3] = { 0.3f, 0.3f, 0.3f }, crDDg[3] = { 0.2f, 0.2f, 0.2f },
 crBl[3] = { 0.0f, 0.0f, 0.0f };
 
-int rflag;
-float rangle = 0.0f;
-
 int mx, my;
 int clicked;
-
-float cm_rength = 12.0f;
 
 // 투영 행렬 제작
 glm::mat4 projection = glm::perspective(
@@ -79,7 +74,7 @@ glm::mat4 orthoProj = glm::ortho(
 	-8.0f, 8.0f,
 	0.1f, 100.0f);
 
-glm::vec3 eye(0.0f, 5.0f, cm_rength), at(0, 0, 0), upv(0, 1, 0);
+glm::vec3 eye(0.0f, 0.0f, 0.0f), at(0, 0, 1), upv(0, 1, 0);
 glm::mat4 view = glm::lookAt(eye, at, upv);
 
 //--- 파일에서 셰이더 코드 읽어오기
@@ -100,26 +95,6 @@ string filetobuf(const char* file)
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
-	}
-	if (key == GLFW_KEY_EQUAL && action == GLFW_PRESS) {
-		eye.z -= 0.1;
-		cm_rength -= 0.1;
-		view = glm::lookAt(eye, at, upv);
-	}
-	if (key == GLFW_KEY_MINUS && action == GLFW_PRESS) {
-		eye.z += 0.1;
-		cm_rength += 0.1;
-		view = glm::lookAt(eye, at, upv);
-	}
-	if (key == GLFW_KEY_O && action == GLFW_PRESS) {
-		if (mods & GLFW_MOD_SHIFT) {
-			if (rflag == 1) rflag = 0;
-			else rflag = 1;
-		}
-		else {
-			if (rflag == 2) rflag = 0;
-			else rflag = 2;
-		}
 	}
 }
 
@@ -313,25 +288,6 @@ GLvoid drawScene()
 	// 회전 타이머
 	if (glfwGetTime() > TIME) {
 
-		if (rflag) {
-			if (rflag == 1) {
-				rangle -= 0.02f;
-				if (rangle < 0.0f) rangle += 360.0f;
-			}
-			else {
-				rangle += 0.02f;
-				if (rangle >= 360.0f) rangle -= 360.0f;
-			}
-
-			float c = cos(rangle);
-			float s = sin(rangle);
-
-			view = glm::lookAt(
-				glm::vec3(s * cm_rength, 5.0f, c * cm_rength),        // eye 
-				at,
-				upv);
-		}
-
 
 		glfwSetTime(0.0);
 	}
@@ -353,7 +309,7 @@ GLvoid drawScene()
 	glm::mat4 mvp;     // 도형
 	glm::mat4 mvpAxis = proj * view * centerMat; // 축
 
-	//glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
 	//glFrontFace(GL_CCW);
 	glEnable(GL_DEPTH_TEST);
@@ -361,7 +317,9 @@ GLvoid drawScene()
 	// txt 단위 큐브
 	{
 		glBindVertexArray(VAO_o);
-
+		mvp = proj * view * centerMat;
+		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(mvp));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
 
 	glUniform3f(colorLocation, 1.0f, 1.0f, 1.0f);
