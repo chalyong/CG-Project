@@ -304,7 +304,8 @@ void InitBuffer(const char* shapePath)
 //--- 출력 함수
 GLvoid drawScene()
 {	
-	view = GetMouseMoveView(glm::vec3(player.x - 0.5f, player.y + 1.3f, player.z - 3.0f));
+	view = GetMouseMoveView(glm::vec3(player.x, player.y, player.z));
+	float yaw = GetMouseMoveYaw();
 
 	//--- 배경색 설정
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -359,7 +360,8 @@ GLvoid drawScene()
 	{
 		glBindVertexArray(VAO_o);
 
-		modelPlayer = glm::translate(glm::mat4(1.0f), glm::vec3(player.x, player.y, player.z));
+		modelPlayer = glm::translate(glm::mat4(1.0f), glm::vec3(player.x, player.y, player.z))
+			* glm::rotate(glm::mat4(1.0f), -yaw, glm::vec3(0.0f, 1.0f, 0.0f));
 
 		model = modelPlayer * sizePlayer;
 		normalMat = glm::transpose(glm::inverse(glm::mat3(model)));
