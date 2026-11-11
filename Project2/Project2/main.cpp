@@ -60,8 +60,9 @@ int lCnt = 18;
 GLuint VAO_o, VBO_oD, VBO_oC, VBO_oN;
 
 //변환 행렬 제작
-glm::mat4 centerMat(1.0f), modelPlayer(1.0f);
-glm::mat4 sizePlayer = glm::scale(modelPlayer, glm::vec3(2.0f, 2.0f, 2.0f));
+glm::mat4 centerMat(1.0f);
+glm::mat4 modelPlayer = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.25f, 0.0f));
+glm::mat4 sizePlayer = glm::scale(modelPlayer, glm::vec3(0.8f, 1.5f, 0.2f));
 
 float crR[3] = { 0.9f, 0.0f, 0.0f }, crG[3] = { 0.0f,0.9f,0.0f }, crB[3] = { 0.0f, 0.0f, 0.9f },
 crC[3] = { 0.0f, 0.9f, 0.9f }, crY[3] = { 0.9f, 0.9f, 0.0f }, crM[3] = { 0.9f, 0.0f, 0.9f },
@@ -303,7 +304,7 @@ void InitBuffer(const char* shapePath)
 //--- 출력 함수
 GLvoid drawScene()
 {	
-	view = GetMouseMoveView(glm::vec3(player.x, player.y, player.z));
+	view = GetMouseMoveView(glm::vec3(player.x - 0.5f, player.y + 1.3f, player.z - 3.0f));
 
 	//--- 배경색 설정
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -357,6 +358,9 @@ GLvoid drawScene()
 	// txt 단위 큐브
 	{
 		glBindVertexArray(VAO_o);
+
+		modelPlayer = glm::translate(glm::mat4(1.0f), glm::vec3(player.x, player.y, player.z));
+
 		model = modelPlayer * sizePlayer;
 		normalMat = glm::transpose(glm::inverse(glm::mat3(model)));
 		mvp = proj * view * model;
