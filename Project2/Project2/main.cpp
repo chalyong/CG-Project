@@ -57,7 +57,7 @@ float lCr[] = {
 };
 int lCnt = 18;
 
-GLuint VAO_o, VBO_oD, VBO_oC;
+GLuint VAO_o, VBO_oD, VBO_oC, VBO_oN;
 
 //변환 행렬 제작
 glm::mat4 centerMat(1.0f), modelPlayer(1.0f);
@@ -218,7 +218,7 @@ int main(int argc, char** argv)
 //--- 버텍스 셰이더 객체 만들기
 void make_vertexShaders()
 {
-	string vertexSource = filetobuf("vertex2.glsl");
+	string vertexSource = filetobuf("vertex3.glsl");
 	const char* source = vertexSource.c_str();
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &source, NULL);
@@ -237,7 +237,7 @@ void make_vertexShaders()
 //--- 프래그먼트 셰이더 객체 만들기
 void make_fragmentShaders()
 {
-	string fragmentSource = filetobuf("fragment2.glsl");
+	string fragmentSource = filetobuf("fragment3.glsl");
 	const char* source = fragmentSource.c_str();
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShader, 1, &source, NULL);
@@ -282,6 +282,8 @@ void InitBuffer(const char* shapePath)
 	if (pAttribute == -1) { cerr << "ERROR: vPos attribute를 찾지 못함\n"; return; }
 	GLint cAttribute = glGetAttribLocation(shaderProgramID, "vColor");
 	if (cAttribute == -1) { cerr << "ERROR: vColor attribute를 찾지 못함\n"; return; }
+	GLint nAttribute = glGetAttribLocation(shaderProgramID, "vNormal");
+	if (nAttribute == -1) { cerr << "ERROR: vNormal attribute를 찾지 못함\n"; return; }
 
 	if (!loadShape(shapePath)) return;
 	buildTriangleData();
@@ -289,7 +291,8 @@ void InitBuffer(const char* shapePath)
 	uploadBuffer(VAO_o, VBO_oD, VBO_oC,
 		g_triPos.data(), g_triPos.size(),
 		g_triCol.data(), g_triCol.size(),
-		pAttribute, cAttribute);
+		pAttribute, cAttribute,
+		&VBO_oN, g_triNrm.data(), g_triNrm.size(), nAttribute);
 
 	uploadBuffer(VAO_l, VBO_lD, VBO_lC,
 		lData, sizeof(lData) / sizeof(float),
@@ -313,10 +316,36 @@ GLvoid drawScene()
 	unsigned int transformLocation = glGetUniformLocation(shaderProgramID, "transform");
 	GLint colorLocation = glGetUniformLocation(shaderProgramID, "overrideColor");
 
+	// 조명 키기/끄기
+	GLint isLightOn = glGetUniformLocation(shaderProgramID, "LightOn");
+	glUniform1i(isLightOn, 1); // 0 - 끔 / 1 - 켬
+	// 주변 조명
+	GLint lightColorLocation = glGetUniformLocation(shaderProgramID, "lightColor");
+	GLint ambientStrengthLocation = glGetUniformLocation(shaderProgramID, "ambientStrength");
+	glUniform3f(lightColorLocation, 1.0f, 1.0f, 1.0f); // 빛 색상
+	glUniform1f(ambientStrengthLocation, 0.3f); // 주변 강도
+	// 산란 조명
+	GLint lightPosLocation = glGetUniformLocation(shaderProgramID, "lightPos");
+	GLint diffuseStrengthLocation = glGetUniformLocation(shaderProgramID, "diffuseStrength");
+	GLint modelLocation = glGetUniformLocation(shaderProgramID, "model");
+	GLint normalMatrixLocation = glGetUniformLocation(shaderProgramID, "normalMatrix");
+	glUniform3f(lightPosLocation, 4.0f, 5.0f, -4.0f); // 빛 위치 / 현재 우상단
+	glUniform1f(diffuseStrengthLocation, 0.5f); // 산란 강도
+	// 거울 조명
+	GLint viewPosLocation = glGetUniformLocation(shaderProgramID, "viewPos");
+	GLint specularStrengthLocation = glGetUniformLocation(shaderProgramID, "specularStrength");
+	GLint shininessLocation = glGetUniformLocation(shaderProgramID, "shininess");
+	glm::vec3 viewPos = glm::vec3(glm::inverse(view)[3]);
+	glUniform3fv(viewPosLocation, 1, glm::value_ptr(viewPos)); // 카메라 위치
+	glUniform1f(specularStrengthLocation, 0.8f); // 거울 강도
+	glUniform1f(shininessLocation, 32.0f); // 반사 세기 / 32, 64, 128
+
 	glm::mat4 proj = projection;
 
 	glm::mat4 mvp;     // 도형
 	glm::mat4 mvpAxis = proj * view * centerMat; // 축
+	glm::mat4 model; // 빛 계산을 위한 모델 / 산란
+	glm::mat3 normalMat; // 빛 계산을 위한 법선 행렬 / 산란
 
 	glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
@@ -328,7 +357,11 @@ GLvoid drawScene()
 	// txt 단위 큐브
 	{
 		glBindVertexArray(VAO_o);
-		mvp = proj * view * modelPlayer * sizePlayer;
+		model = modelPlayer * sizePlayer;
+		normalMat = glm::transpose(glm::inverse(glm::mat3(model)));
+		mvp = proj * view * model;
+		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix3fv(normalMatrixLocation, 1, GL_FALSE, glm::value_ptr(normalMat));
 		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(mvp));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
