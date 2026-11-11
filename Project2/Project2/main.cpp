@@ -16,7 +16,7 @@
 
 using namespace std;
 
-#define FILE_NAME "cube.obj_19.txt"
+#define FILE_NAME "cube.obj.txt"
 #define TIME 0.02
 
 //--- 사용자 정의 함수
