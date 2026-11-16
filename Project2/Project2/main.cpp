@@ -38,13 +38,13 @@ bool keyW = false, keyS = false, keyA = false, keyD = false;
 
 GLuint VAO_l, VBO_lD, VBO_lC;
 float lData[] = {
-6.0f, -1.0f, 6.0f,
-6.0f, -1.0f, -6.0f,
--6.0f, -1.0f, 6.0f,
+100.0f, -1.0f, 100.0f,
+100.0f, -1.0f, -100.0f,
+-100.0f, -1.0f, 100.0f,
 
-6.0f, -1.0f, -6.0f,
--6.0f, -1.0f, -6.0f,
--6.0f, -1.0f, 6.0f
+100.0f, -1.0f, -100.0f,
+-100.0f, -1.0f, -100.0f,
+-100.0f, -1.0f, 100.0f
 };
 float lCr[] = {
 0.0f, 0.8f, 0.0f,

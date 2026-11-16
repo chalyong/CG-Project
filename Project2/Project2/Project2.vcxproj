@@ -150,8 +150,8 @@
     <ClInclude Include="player.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="fragment2.glsl" />
-    <None Include="vertex2.glsl" />
+    <None Include="fragment3.glsl" />
+    <None Include="vertex3.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

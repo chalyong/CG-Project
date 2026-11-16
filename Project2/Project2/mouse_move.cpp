@@ -70,9 +70,9 @@ float GetMouseMoveYaw()
 glm::mat4 GetMouseMoveView(const glm::vec3& playerPosition)
 {
 	//--- 3인칭 카메라 오프셋 (플레이어 기준)
-	const float EYE_RIGHT = 0.5f;   // 화면 오른쪽 0.5  -> x -0.5
-	const float EYE_UP = 1.3f;   // 눈 높이        -> y +1.3
-	const float EYE_BACK = 3.0f;   // 뒤쪽 거리      -> z -3.0
+	const float EYE_RIGHT = 0.0f;   // 화면 오른쪽 x
+	const float EYE_UP = 3.5f;   // 눈 높이 y
+	const float EYE_BACK = 8.0f;   // 뒤쪽 거리 -z
 	const float TARGET_UP = 0.2f;   // 캐릭터를 보는 높이
 
 	float cp = cosf(pitch), sp = sinf(pitch);
