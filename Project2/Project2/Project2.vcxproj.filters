@@ -24,6 +24,9 @@
     <ClCompile Include="player.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="ui.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="buffer.cpp">
@@ -35,12 +38,21 @@
     <ClInclude Include="player.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="ui.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment3.glsl">
       <Filter>소스 파일</Filter>
     </None>
     <None Include="vertex3.glsl">
+      <Filter>소스 파일</Filter>
+    </None>
+    <None Include="fragmentUI.glsl">
+      <Filter>소스 파일</Filter>
+    </None>
+    <None Include="vertexUI.glsl">
       <Filter>소스 파일</Filter>
     </None>
   </ItemGroup>

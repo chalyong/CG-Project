@@ -1,0 +1,11 @@
+#version 330 core
+
+layout(location = 0) in vec2 vPos;   // unit quad (0,0) ~ (1,1)
+
+uniform mat4 uProj;   // screen space projection
+uniform vec4 uRect;   // x, y, width, height (pixel)
+
+void main()
+{
+	gl_Position = uProj * vec4(uRect.xy + vPos * uRect.zw, 0.0, 1.0);
+}

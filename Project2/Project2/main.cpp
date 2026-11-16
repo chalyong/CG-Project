@@ -13,6 +13,7 @@
 #include "buffer.cpp"
 #include "mouse_move.h"
 #include "player.h"
+#include "ui.h"
 
 using namespace std;
 
@@ -27,7 +28,7 @@ GLvoid drawScene();
 void InitBuffer(const char* shapePath);
 
 //--- 필요한 변수 선언
-GLint width = 1000, height = 1000;
+GLint width = 1280, height = 960;
 GLuint shaderProgramID;
 GLuint vertexShader;
 GLuint fragmentShader;
@@ -181,6 +182,8 @@ int main(int argc, char** argv)
 	//--- VAO와 VBO 객체 생성
 	InitBuffer(shapeFile.c_str());
 
+	InitUI();
+
 	//--- 콜백 함수 등록
 	glfwSetKeyCallback(window, KeyCallback);
 	glfwSetMouseButtonCallback(window, MouseButtonCallback);
@@ -207,6 +210,9 @@ int main(int argc, char** argv)
 		}
 
 		player.Move(dir_f, dir_s, GetMouseMoveYaw(), dt);
+
+		player.mana += player.manaRegen * dt;
+		if (player.mana > player.maxMana) player.mana = player.maxMana;
 
 		drawScene();
 		glfwSwapBuffers(window);
@@ -381,4 +387,7 @@ GLvoid drawScene()
 
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
+
+	DrawUI((float)width, (float)height,
+		player.health, player.maxHealth, player.mana, player.maxMana);
 }

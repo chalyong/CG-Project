@@ -143,15 +143,19 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mouse_move.cpp" />
     <ClCompile Include="player.cpp" />
+    <ClCompile Include="ui.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="buffer.cpp" />
     <ClInclude Include="mouse_move.h" />
     <ClInclude Include="player.h" />
+    <ClInclude Include="ui.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment3.glsl" />
     <None Include="vertex3.glsl" />
+    <None Include="fragmentUI.glsl" />
+    <None Include="vertexUI.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
