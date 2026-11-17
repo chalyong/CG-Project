@@ -38,9 +38,10 @@ int dir_f, dir_s;
 bool keyW = false, keyS = false, keyA = false, keyD = false;
 
 enum GameMode { MODE_TITLE, MODE_PLAY, MODE_END };
-GameMode gameMode = MODE_TITLE;
+GameMode gameMode = MODE_PLAY; // 현재 게임 모드 / 시작시 TITLE 이어야 하나, 개발 편의상 PLAY로 시작
 bool pendingStart = false;   // TITLE, END	-> PLAY 요청
 bool pendingTitle = false;   // END, PLAY	-> TITLE 요청
+bool pendingGameOver = false; // PLAY -> END 요청
 
 GLuint VAO_l, VBO_lD, VBO_lC;
 float lData[] = {
@@ -144,6 +145,11 @@ void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 
 }
 
+void ResetGame()
+{
+
+}
+
 //--- 메인 함수
 int main(int argc, char** argv)
 {
@@ -214,18 +220,35 @@ int main(int argc, char** argv)
 
 		bool focused = glfwGetWindowAttrib(window, GLFW_FOCUSED) != 0;
 
-		int dir_f = 0, dir_s = 0;
-		if (focused) {
-			dir_f = (keyW ? 1 : 0) - (keyS ? 1 : 0);
-			dir_s = (keyD ? 1 : 0) - (keyA ? 1 : 0);
+		if (gameMode == MODE_PLAY) {
+			int dir_f = 0, dir_s = 0;
+			if (focused) {
+				dir_f = (keyW ? 1 : 0) - (keyS ? 1 : 0);
+				dir_s = (keyD ? 1 : 0) - (keyA ? 1 : 0);
+			}
+
+			player.Move(dir_f, dir_s, GetMouseMoveYaw(), dt);
+
+			player.mana += player.manaRegen * dt;
+			if (player.mana > player.maxMana) player.mana = player.maxMana;
 		}
 
-		player.Move(dir_f, dir_s, GetMouseMoveYaw(), dt);
-
-		player.mana += player.manaRegen * dt;
-		if (player.mana > player.maxMana) player.mana = player.maxMana;
-
 		drawScene();
+
+		if (pendingStart) { 
+			ResetGame();
+			gameMode = MODE_PLAY;
+			pendingStart = false;
+		}
+		if (pendingGameOver) {
+			gameMode = MODE_END;
+			pendingGameOver = false;
+		}
+		if (pendingTitle) {
+			gameMode = MODE_TITLE;
+			pendingTitle = false;
+		}
+
 		glfwSwapBuffers(window);
 	}
 	glfwDestroyWindow(window);
