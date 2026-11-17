@@ -37,6 +37,11 @@ Player player;
 int dir_f, dir_s;
 bool keyW = false, keyS = false, keyA = false, keyD = false;
 
+enum GameMode { MODE_TITLE, MODE_PLAY, MODE_END };
+GameMode gameMode = MODE_TITLE;
+bool pendingStart = false;   // TITLE, END	-> PLAY 요청
+bool pendingTitle = false;   // END, PLAY	-> TITLE 요청
+
 GLuint VAO_l, VBO_lD, VBO_lC;
 float lData[] = {
 100.0f, -1.0f, 100.0f,
@@ -102,13 +107,19 @@ string filetobuf(const char* file)
 
 // 입력 처리 / 콜백
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
-	}
 	if (key == GLFW_KEY_W) keyW = (action != GLFW_RELEASE);
 	if (key == GLFW_KEY_S) keyS = (action != GLFW_RELEASE);
 	if (key == GLFW_KEY_A) keyA = (action != GLFW_RELEASE);
 	if (key == GLFW_KEY_D) keyD = (action != GLFW_RELEASE);
+
+	// TITLE 화면에서 ESC를 누르면 종료, ENTER/SPACE를 누르면 게임 시작
+	if (gameMode == MODE_TITLE && key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GLFW_TRUE);
+	if (gameMode == MODE_TITLE && (key == GLFW_KEY_ENTER || key == GLFW_KEY_SPACE) && action == GLFW_PRESS) pendingStart = true;
+	// PLAY 화면에서 ESC를 누르면 TITLE 화면으로
+	if (gameMode == MODE_PLAY && key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) pendingTitle = true;
+	// END 화면에서 R을 누르면 게임 재시작, ENTER/ESC를 누르면 TITLE 화면으로
+	if (gameMode == MODE_END && key == GLFW_KEY_R && action == GLFW_PRESS) pendingStart = true;
+	if (gameMode == MODE_END && (key == GLFW_KEY_ENTER || key == GLFW_KEY_ESCAPE) && action == GLFW_PRESS) pendingTitle = true;
 }
 
 void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
