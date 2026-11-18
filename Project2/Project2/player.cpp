@@ -2,11 +2,16 @@
 #include <cmath>
 #include <gl/glm/glm.hpp>
 
+static constexpr float GRAVITY = 18.0f;
+static constexpr float JUMP_POWER = 7.0f;
+static constexpr float GROUND_Y = 0.0f;
+
 Player::Player()
 	: maxHealth(100.0f), health(100.0f)
 	, maxMana(60.0f), mana(0.0f), manaRegen(2.0f)
 	, x(0.0f), y(0.0f), z(0.0f)
 	, moveSpeed(3.0f)
+	, vy(0.0f)
 {
 }
 
@@ -30,4 +35,29 @@ void Player::Reset()
 	x = y = z = 0.0f;        // 시작 위치
 	health = maxHealth;      // HP 가득
 	mana = 0;				 // MP 0
+	vy = 0.0f;				 // 수직 속도 초기화
+}
+
+void Player::Jump()
+{
+	if (y <= GROUND_Y) {
+		vy = JUMP_POWER; // 점프 속도 설정
+	}
+}
+
+void Player::Update(int dirF, int dirS, float yaw, float dt)
+{
+	Move(dirF, dirS, yaw, dt);
+	// 중력 적용
+	vy -= GRAVITY * dt;
+	y += vy * dt;
+	// 땅에 닿으면 중력 초기화
+	if (y < GROUND_Y) {
+		y = GROUND_Y;
+		vy = 0.0f;
+	}
+	// 마나 회복
+	mana += manaRegen * dt;
+	if (mana > maxMana) mana = maxMana;
+
 }

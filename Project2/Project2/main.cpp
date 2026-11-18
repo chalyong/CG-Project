@@ -130,6 +130,10 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		if (key == GLFW_KEY_S) keyS = (action != GLFW_RELEASE);
 		if (key == GLFW_KEY_A) keyA = (action != GLFW_RELEASE);
 		if (key == GLFW_KEY_D) keyD = (action != GLFW_RELEASE);
+		//SPACE - 점프
+		if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+			player.Jump();
+		}
 		//ESC - TITLE 화면
 		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) pendingTitle = true;
 	}
@@ -252,11 +256,7 @@ int main(int argc, char** argv)
 				dir_s = (keyD ? 1 : 0) - (keyA ? 1 : 0);
 			}
 
-			player.Move(dir_f, dir_s, GetMouseMoveYaw(), dt);
-
-			player.mana += player.manaRegen * dt;
-			if (player.mana > player.maxMana) player.mana = player.maxMana;
-
+			player.Update(dir_f, dir_s, GetMouseMoveYaw(), dt);
 			if (player.health <= 0.0f) pendingGameOver = true;
 		}
 

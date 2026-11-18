@@ -17,6 +17,11 @@ public:
 	// 위치
 	float x, y, z;
 	float moveSpeed;
+	float vy; // 수직 속도
+
+	// 함수
 	void Move(int dirF, int dirS, float yaw, float deltaTime);
 	void Reset();
+	void Jump();
+	void Update(int dirF, int dirS, float yaw, float dt);
 };
