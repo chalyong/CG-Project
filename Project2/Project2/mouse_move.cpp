@@ -97,3 +97,10 @@ glm::mat4 GetMouseMoveView(const glm::vec3& playerPosition)
 
 	return glm::lookAt(eye, target, glm::vec3(0.0f, 1.0f, 0.0f));
 }
+
+void ResetMouseMove()
+{
+	yaw = 0.0f;
+	pitch = 0.0f;
+	mouseDx = mouseDy = 0.0;
+}

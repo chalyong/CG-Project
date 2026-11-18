@@ -145,9 +145,12 @@ void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 
 }
 
-void ResetGame()
-{
-
+void ResetGame() {
+	player.Reset();
+	ResetMouseMove();
+	keyW = keyS = keyA = keyD = false;
+	dir_f = dir_s = 0;
+	clicked = 0;
 }
 
 //--- 메인 함수

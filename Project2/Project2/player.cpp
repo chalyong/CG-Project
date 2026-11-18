@@ -24,3 +24,10 @@ void Player::Move(int dirF, int dirS, float yaw, float deltaTime)
 	x += move.x * moveSpeed * deltaTime;
 	z += move.z * moveSpeed * deltaTime;
 }
+
+void Player::Reset()
+{
+	x = y = z = 0.0f;        // 시작 위치
+	health = maxHealth;      // HP 가득
+	mana = 0;				 // MP 0
+}
