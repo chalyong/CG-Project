@@ -49,7 +49,7 @@ namespace {
 		return shader;
 	}
 
-	//--- 사각형 하나 그리기 (uRect / uColor는 이미 설정된 상태)
+	//--- 사각형 하나 그리기
 	void DrawRect(float x, float y, float w, float h, const glm::vec4& color)
 	{
 		if (w <= 0.0f || h <= 0.0f) return;   // 게이지가 0이면 그리지 않는다
@@ -57,6 +57,31 @@ namespace {
 		glUniform4fv(uColorLoc, 1, &color.x);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
+
+	void BeginUI(float screenW, float screenH)
+	{
+		if (uiProgramID == 0) return;
+		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glUseProgram(uiProgramID);
+		glBindVertexArray(uiVAO);
+
+		//--- 화면 좌표계: 좌상단이 (0,0)
+		glm::mat4 proj = glm::ortho(0.0f, screenW, screenH, 0.0f);
+		glUniformMatrix4fv(uProjLoc, 1, GL_FALSE, glm::value_ptr(proj));
+	}
+
+	void EndUI()
+	{
+		glBindVertexArray(0);
+		glDisable(GL_BLEND);
+	}
+}
+
+void DrawBox(float x, float y, float w, float h, float r, float g, float b, float a)
+{
+	DrawRect(x, y, w, h, glm::vec4(r, g, b, a));
 }
 
 void InitUI()
@@ -128,9 +153,7 @@ void DrawUI(float screenW, float screenH,
 	glUseProgram(uiProgramID);
 	glBindVertexArray(uiVAO);
 
-	//--- 화면 좌표계: 좌상단이 (0,0)
-	glm::mat4 proj = glm::ortho(0.0f, screenW, screenH, 0.0f);
-	glUniformMatrix4fv(uProjLoc, 1, GL_FALSE, glm::value_ptr(proj));
+	BeginUI(screenW, screenH);
 
 	// HP: 테두리 / 배경 / 채움
 	DrawRect(16.0f, screenH - 78.0f, 308.0f, 32.0f, glm::vec4(0.90f, 0.90f, 0.90f, 1.0f));
@@ -142,6 +165,46 @@ void DrawUI(float screenW, float screenH,
 	DrawRect(20.0f, screenH - 36.0f, 300.0f, 16.0f, glm::vec4(0.10f, 0.10f, 0.10f, 1.0f));
 	DrawRect(20.0f, screenH - 36.0f, 300.0f * mpRatio, 16.0f, glm::vec4(0.25f, 0.45f, 0.95f, 1.0f));
 
-	glBindVertexArray(0);
-	glDisable(GL_BLEND);
+	EndUI();
+}
+
+void DrawTitleScreen(float w, float h)
+{
+	if (uiProgramID == 0) return;
+	BeginUI(w, h);
+
+	DrawBox(0.0f, 0.0f, w, h, 0.05f, 0.06f, 0.10f, 0.75f);        // 반투명 배경(3D가 어둡게 비침)
+
+	DrawBox(w * 0.5f - 320.0f, h * 0.24f, 640.0f, 140.0f,         // 제목 배너
+		0.12f, 0.12f, 0.16f, 0.95f);
+	DrawBox(w * 0.5f - 316.0f, h * 0.24f + 4.0f, 632.0f, 8.0f,    // 배너 상단 액센트
+		0.85f, 0.65f, 0.15f, 1.0f);
+
+	DrawBox(w * 0.5f - 150.0f, h * 0.55f, 300.0f, 80.0f,          // START 버튼(테두리)
+		0.18f, 0.60f, 0.30f, 1.0f);
+	DrawBox(w * 0.5f - 146.0f, h * 0.55f + 4.0f, 292.0f, 72.0f,   // START 버튼(속)
+		0.10f, 0.42f, 0.20f, 1.0f);
+
+	DrawBox(w * 0.5f - 220.0f, h * 0.74f, 440.0f, 44.0f,          // 안내 영역
+		0.0f, 0.0f, 0.0f, 0.55f);
+
+	EndUI();
+}
+
+void DrawEndScreen(float w, float h, bool clear)
+{
+	if (uiProgramID == 0) return;
+	BeginUI(w, h);
+
+	DrawBox(0.0f, 0.0f, w, h, 0.10f, 0.02f, 0.02f, 0.75f);        // 패배: 붉은 빛
+
+	DrawBox(w * 0.5f - 320.0f, h * 0.30f, 640.0f, 160.0f,         // 결과 배너
+		clear ? 0.10f : 0.35f, clear ? 0.35f : 0.06f, 0.10f, 0.95f);
+
+	DrawBox(w * 0.5f - 150.0f, h * 0.62f, 300.0f, 70.0f,          // 재시작 버튼
+		0.20f, 0.20f, 0.25f, 1.0f);
+	DrawBox(w * 0.5f - 146.0f, h * 0.62f + 4.0f, 292.0f, 62.0f,
+		0.12f, 0.12f, 0.16f, 1.0f);
+
+	EndUI();
 }

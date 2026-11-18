@@ -428,13 +428,13 @@ GLvoid drawScene()
 	glDisable(GL_CULL_FACE);
 	switch (gameMode) {
 	case MODE_TITLE: 
-		//DrawTitleScreen(); 
+		DrawTitleScreen((float)width, (float)height);
 		break;
 	case MODE_PLAY:  
 		DrawUI((float)width, (float)height, player.health, player.maxHealth, player.mana, player.maxMana); 
 		break;
 	case MODE_END:   
-		//DrawEndScreen();
+		DrawEndScreen((float)width, (float)height, false);
 		break;
 	}
 }
