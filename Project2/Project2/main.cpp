@@ -235,15 +235,18 @@ int main(int argc, char** argv)
 
 		drawScene();
 
-		if (pendingStart) { 
+		// 게임 오버, 타이틀에서 게임 모드로 이동
+		if (pendingStart) {
 			ResetGame();
 			gameMode = MODE_PLAY;
 			pendingStart = false;
 		}
+		// 게임 모드에서 게임 오버로 이동
 		if (pendingGameOver) {
 			gameMode = MODE_END;
 			pendingGameOver = false;
 		}
+		// 게임 모드, 게임 오버에서 타이틀로 이동
 		if (pendingTitle) {
 			gameMode = MODE_TITLE;
 			pendingTitle = false;
@@ -344,7 +347,9 @@ void InitBuffer(const char* shapePath)
 //--- 출력 함수
 GLvoid drawScene()
 {	
-	view = GetMouseMoveView(glm::vec3(player.x, player.y, player.z));
+	if (gameMode == MODE_PLAY) view = GetMouseMoveView(glm::vec3(player.x, player.y, player.z));
+	//else if (gameMode == MODE_TITLE) view = TitleCamera();
+	//else                              view = EndCamera();
 	float yaw = GetMouseMoveYaw();
 
 	//--- 배경색 설정
@@ -421,7 +426,15 @@ GLvoid drawScene()
 
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
-
-	DrawUI((float)width, (float)height,
-		player.health, player.maxHealth, player.mana, player.maxMana);
+	switch (gameMode) {
+	case MODE_TITLE: 
+		//DrawTitleScreen(); 
+		break;
+	case MODE_PLAY:  
+		DrawUI((float)width, (float)height, player.health, player.maxHealth, player.mana, player.maxMana); 
+		break;
+	case MODE_END:   
+		//DrawEndScreen();
+		break;
+	}
 }
