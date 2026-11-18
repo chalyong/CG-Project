@@ -1,4 +1,4 @@
-#include <gl/glm/glm.hpp>
+ï»¿#include <gl/glm/glm.hpp>
 #include <gl/glm/ext.hpp>
 #include <gl/glm/gtc/matrix_transform.hpp>
 #include <GL/glew.h>
@@ -20,14 +20,14 @@ using namespace std;
 #define FILE_NAME "cube.obj.txt"
 #define TIME 0.02
 
-//--- »ç¿ëÀÚ Á¤ÀÇ ÇÔ¼ö
+//--- ì‚¬ìš©ìž ì •ì˜ í•¨ìˆ˜
 void make_vertexShaders();
 void make_fragmentShaders();
 GLuint make_shaderProgram();
 GLvoid drawScene();
 void InitBuffer(const char* shapePath);
 
-//--- ÇÊ¿äÇÑ º¯¼ö ¼±¾ð
+//--- í•„ìš”í•œ ë³€ìˆ˜ ì„ ì–¸
 GLint width = 1280, height = 960;
 GLuint shaderProgramID;
 GLuint vertexShader;
@@ -38,10 +38,10 @@ int dir_f, dir_s;
 bool keyW = false, keyS = false, keyA = false, keyD = false;
 
 enum GameMode { MODE_TITLE, MODE_PLAY, MODE_END };
-GameMode gameMode = MODE_PLAY; // ÇöÀç °ÔÀÓ ¸ðµå / ½ÃÀÛ½Ã TITLE ÀÌ¾î¾ß ÇÏ³ª, °³¹ß ÆíÀÇ»ó PLAY·Î ½ÃÀÛ
-bool pendingStart = false;   // TITLE, END	-> PLAY ¿äÃ»
-bool pendingTitle = false;   // END, PLAY	-> TITLE ¿äÃ»
-bool pendingGameOver = false; // PLAY -> END ¿äÃ»
+GameMode gameMode = MODE_PLAY; // í˜„ìž¬ ê²Œìž„ ëª¨ë“œ / ì‹œìž‘ì‹œ TITLE ì´ì–´ì•¼ í•˜ë‚˜, ê°œë°œ íŽ¸ì˜ìƒ PLAYë¡œ ì‹œìž‘
+bool pendingStart = false;   // TITLE, END	-> PLAY ìš”ì²­
+bool pendingTitle = false;   // END, PLAY	-> TITLE ìš”ì²­
+bool pendingGameOver = false; // PLAY -> END ìš”ì²­
 
 GLuint VAO_l, VBO_lD, VBO_lC;
 float lData[] = {
@@ -66,7 +66,7 @@ int lCnt = 18;
 
 GLuint VAO_o, VBO_oD, VBO_oC, VBO_oN;
 
-//º¯È¯ Çà·Ä Á¦ÀÛ
+//ë³€í™˜ í–‰ë ¬ ì œìž‘
 glm::mat4 centerMat(1.0f);
 glm::mat4 modelPlayer = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.25f, 0.0f));
 glm::mat4 sizePlayer = glm::scale(modelPlayer, glm::vec3(0.8f, 1.5f, 0.2f));
@@ -79,7 +79,7 @@ crBl[3] = { 0.0f, 0.0f, 0.0f };
 int mx, my;
 int clicked;
 
-// Åõ¿µ Çà·Ä Á¦ÀÛ
+// íˆ¬ì˜ í–‰ë ¬ ì œìž‘
 glm::mat4 projection = glm::perspective(
 	glm::radians(45.0f),                        // fovy
 	(float)width / (float)height,               // aspect
@@ -92,7 +92,7 @@ glm::mat4 orthoProj = glm::ortho(
 
 glm::mat4 view = glm::mat4(1.0f);
 
-//--- ÆÄÀÏ¿¡¼­ ¼ÎÀÌ´õ ÄÚµå ÀÐ¾î¿À±â
+//--- íŒŒì¼ì—ì„œ ì…°ì´ë” ì½”ë“œ ì½ì–´ì˜¤ê¸°
 string filetobuf(const char* file)
 {
 	ifstream shaderFile(file);
@@ -106,19 +106,19 @@ string filetobuf(const char* file)
 }
 
 
-// ÀÔ·Â Ã³¸® / ÄÝ¹é
+// ìž…ë ¥ ì²˜ë¦¬ / ì½œë°±
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_W) keyW = (action != GLFW_RELEASE);
 	if (key == GLFW_KEY_S) keyS = (action != GLFW_RELEASE);
 	if (key == GLFW_KEY_A) keyA = (action != GLFW_RELEASE);
 	if (key == GLFW_KEY_D) keyD = (action != GLFW_RELEASE);
 
-	// TITLE È­¸é¿¡¼­ ESC¸¦ ´©¸£¸é Á¾·á, ENTER/SPACE¸¦ ´©¸£¸é °ÔÀÓ ½ÃÀÛ
+	// TITLE í™”ë©´ì—ì„œ ESCë¥¼ ëˆ„ë¥´ë©´ ì¢…ë£Œ, ENTER/SPACEë¥¼ ëˆ„ë¥´ë©´ ê²Œìž„ ì‹œìž‘
 	if (gameMode == MODE_TITLE && key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GLFW_TRUE);
 	if (gameMode == MODE_TITLE && (key == GLFW_KEY_ENTER || key == GLFW_KEY_SPACE) && action == GLFW_PRESS) pendingStart = true;
-	// PLAY È­¸é¿¡¼­ ESC¸¦ ´©¸£¸é TITLE È­¸éÀ¸·Î
+	// PLAY í™”ë©´ì—ì„œ ESCë¥¼ ëˆ„ë¥´ë©´ TITLE í™”ë©´ìœ¼ë¡œ
 	if (gameMode == MODE_PLAY && key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) pendingTitle = true;
-	// END È­¸é¿¡¼­ RÀ» ´©¸£¸é °ÔÀÓ Àç½ÃÀÛ, ENTER/ESC¸¦ ´©¸£¸é TITLE È­¸éÀ¸·Î
+	// END í™”ë©´ì—ì„œ Rì„ ëˆ„ë¥´ë©´ ê²Œìž„ ìž¬ì‹œìž‘, ENTER/ESCë¥¼ ëˆ„ë¥´ë©´ TITLE í™”ë©´ìœ¼ë¡œ
 	if (gameMode == MODE_END && key == GLFW_KEY_R && action == GLFW_PRESS) pendingStart = true;
 	if (gameMode == MODE_END && (key == GLFW_KEY_ENTER || key == GLFW_KEY_ESCAPE) && action == GLFW_PRESS) pendingTitle = true;
 }
@@ -150,30 +150,30 @@ void ResetGame()
 
 }
 
-//--- ¸ÞÀÎ ÇÔ¼ö
+//--- ë©”ì¸ í•¨ìˆ˜
 int main(int argc, char** argv)
 {
 	srand((unsigned int)time(NULL));
 
-	//--- µµÇü µ¥ÀÌÅÍ ÆÄÀÏ °æ·Î (ÀÎÀÚ·Î ¹Þ°Å³ª ÄÜ¼Ö ÀÔ·Â)
+	//--- ë„í˜• ë°ì´í„° íŒŒì¼ ê²½ë¡œ (ì¸ìžë¡œ ë°›ê±°ë‚˜ ì½˜ì†” ìž…ë ¥)
 	string shapeFile;
 	if (argc > 1) shapeFile = argv[1];
 	else {
 		shapeFile = FILE_NAME;
 	}
 	if (shapeFile.empty()) {
-		cerr << "ERROR: µµÇü µ¥ÀÌÅÍ ÆÄÀÏÀÌ ÁöÁ¤µÇÁö ¾ÊÀ½\n";
+		cerr << "ERROR: ë„í˜• ë°ì´í„° íŒŒì¼ì´ ì§€ì •ë˜ì§€ ì•ŠìŒ\n";
 		return -1;
 	}
 
-	//--- GLFW ÃÊ±âÈ­
+	//--- GLFW ì´ˆê¸°í™”
 	if (!glfwInit())
 		return -1;
-	//--- OpenGL ¹öÀü ¹× ÇÁ·ÎÆÄÀÏ ¼³Á¤
+	//--- OpenGL ë²„ì „ ë° í”„ë¡œíŒŒì¼ ì„¤ì •
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	//--- À©µµ¿ì »ý¼º
+	//--- ìœˆë„ìš° ìƒì„±
 	GLFWwindow* window =
 		glfwCreateWindow(width, height, "OpenGL Window", nullptr, nullptr);
 	if (!window)
@@ -181,9 +181,9 @@ int main(int argc, char** argv)
 		glfwTerminate();
 		return -1;
 	}
-	//--- »ý¼ºÇÑ À©µµ¿ìÀÇ OpenGL Context¸¦ ÇöÀç Context·Î ¼³Á¤
+	//--- ìƒì„±í•œ ìœˆë„ìš°ì˜ OpenGL Contextë¥¼ í˜„ìž¬ Contextë¡œ ì„¤ì •
 	glfwMakeContextCurrent(window);
-	//--- GLEW ÃÊ±âÈ­
+	//--- GLEW ì´ˆê¸°í™”
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)
 	{
@@ -191,22 +191,22 @@ int main(int argc, char** argv)
 		glfwTerminate();
 		return -1;
 	}
-	//--- ¼ÎÀÌ´õ ÀÐ¾î¿Í¼­ ¼ÎÀÌ´õ ÇÁ·Î±×·¥ ¸¸µé±â
+	//--- ì…°ì´ë” ì½ì–´ì™€ì„œ ì…°ì´ë” í”„ë¡œê·¸ëž¨ ë§Œë“¤ê¸°
 	make_vertexShaders();
 	make_fragmentShaders();
 	shaderProgramID = make_shaderProgram();
 
-	//--- VAO¿Í VBO °´Ã¼ »ý¼º
+	//--- VAOì™€ VBO ê°ì²´ ìƒì„±
 	InitBuffer(shapeFile.c_str());
 
 	InitUI();
 
-	//--- ÄÝ¹é ÇÔ¼ö µî·Ï
+	//--- ì½œë°± í•¨ìˆ˜ ë“±ë¡
 	glfwSetKeyCallback(window, KeyCallback);
 	glfwSetMouseButtonCallback(window, MouseButtonCallback);
 	InitMouseMove(window);
 
-	//--- ·»´õ¸µ ·çÇÁ
+	//--- ë Œë”ë§ ë£¨í”„
 	double prevTime = glfwGetTime();
 	while (!glfwWindowShouldClose(window))
 	{
@@ -235,18 +235,18 @@ int main(int argc, char** argv)
 
 		drawScene();
 
-		// °ÔÀÓ ¿À¹ö, Å¸ÀÌÆ²¿¡¼­ °ÔÀÓ ¸ðµå·Î ÀÌµ¿
+		// ê²Œìž„ ì˜¤ë²„, íƒ€ì´í‹€ì—ì„œ ê²Œìž„ ëª¨ë“œë¡œ ì´ë™
 		if (pendingStart) {
 			ResetGame();
 			gameMode = MODE_PLAY;
 			pendingStart = false;
 		}
-		// °ÔÀÓ ¸ðµå¿¡¼­ °ÔÀÓ ¿À¹ö·Î ÀÌµ¿
+		// ê²Œìž„ ëª¨ë“œì—ì„œ ê²Œìž„ ì˜¤ë²„ë¡œ ì´ë™
 		if (pendingGameOver) {
 			gameMode = MODE_END;
 			pendingGameOver = false;
 		}
-		// °ÔÀÓ ¸ðµå, °ÔÀÓ ¿À¹ö¿¡¼­ Å¸ÀÌÆ²·Î ÀÌµ¿
+		// ê²Œìž„ ëª¨ë“œ, ê²Œìž„ ì˜¤ë²„ì—ì„œ íƒ€ì´í‹€ë¡œ ì´ë™
 		if (pendingTitle) {
 			gameMode = MODE_TITLE;
 			pendingTitle = false;
@@ -259,7 +259,7 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-//--- ¹öÅØ½º ¼ÎÀÌ´õ °´Ã¼ ¸¸µé±â
+//--- ë²„í…ìŠ¤ ì…°ì´ë” ê°ì²´ ë§Œë“¤ê¸°
 void make_vertexShaders()
 {
 	string vertexSource = filetobuf("vertex3.glsl");
@@ -273,12 +273,12 @@ void make_vertexShaders()
 	if (!result)
 	{
 		glGetShaderInfoLog(vertexShader, 512, NULL, errorLog);
-		cerr << "ERROR: vertex shader ÄÄÆÄÀÏ ½ÇÆÐ\n" << errorLog << endl;
+		cerr << "ERROR: vertex shader ì»´íŒŒì¼ ì‹¤íŒ¨\n" << errorLog << endl;
 		return;
 	}
 }
 
-//--- ÇÁ·¡±×¸ÕÆ® ¼ÎÀÌ´õ °´Ã¼ ¸¸µé±â
+//--- í”„ëž˜ê·¸ë¨¼íŠ¸ ì…°ì´ë” ê°ì²´ ë§Œë“¤ê¸°
 void make_fragmentShaders()
 {
 	string fragmentSource = filetobuf("fragment3.glsl");
@@ -292,12 +292,12 @@ void make_fragmentShaders()
 	if (!result)
 	{
 		glGetShaderInfoLog(fragmentShader, 512, NULL, errorLog);
-		cerr << "ERROR: fragment shader ÄÄÆÄÀÏ ½ÇÆÐ\n" << errorLog << endl;
+		cerr << "ERROR: fragment shader ì»´íŒŒì¼ ì‹¤íŒ¨\n" << errorLog << endl;
 		return;
 	}
 }
 
-//--- ¼ÎÀÌ´õ ÇÁ·Î±×·¥ ¸¸µé°í ¼ÎÀÌ´õ °´Ã¼ ¸µÅ©ÇÏ±â
+//--- ì…°ì´ë” í”„ë¡œê·¸ëž¨ ë§Œë“¤ê³  ì…°ì´ë” ê°ì²´ ë§í¬í•˜ê¸°
 GLuint make_shaderProgram()
 {
 	GLint result;
@@ -312,7 +312,7 @@ GLuint make_shaderProgram()
 	if (!result)
 	{
 		glGetProgramInfoLog(shaderID, 512, NULL, errorLog);
-		cerr << "ERROR: shader program ¿¬°á ½ÇÆÐ\n" << errorLog << endl;
+		cerr << "ERROR: shader program ì—°ê²° ì‹¤íŒ¨\n" << errorLog << endl;
 		return 0;
 	}
 	glUseProgram(shaderID);
@@ -323,11 +323,11 @@ GLuint make_shaderProgram()
 void InitBuffer(const char* shapePath)
 {
 	GLint pAttribute = glGetAttribLocation(shaderProgramID, "vPos");
-	if (pAttribute == -1) { cerr << "ERROR: vPos attribute¸¦ Ã£Áö ¸øÇÔ\n"; return; }
+	if (pAttribute == -1) { cerr << "ERROR: vPos attributeë¥¼ ì°¾ì§€ ëª»í•¨\n"; return; }
 	GLint cAttribute = glGetAttribLocation(shaderProgramID, "vColor");
-	if (cAttribute == -1) { cerr << "ERROR: vColor attribute¸¦ Ã£Áö ¸øÇÔ\n"; return; }
+	if (cAttribute == -1) { cerr << "ERROR: vColor attributeë¥¼ ì°¾ì§€ ëª»í•¨\n"; return; }
 	GLint nAttribute = glGetAttribLocation(shaderProgramID, "vNormal");
-	if (nAttribute == -1) { cerr << "ERROR: vNormal attribute¸¦ Ã£Áö ¸øÇÔ\n"; return; }
+	if (nAttribute == -1) { cerr << "ERROR: vNormal attributeë¥¼ ì°¾ì§€ ëª»í•¨\n"; return; }
 
 	if (!loadShape(shapePath)) return;
 	buildTriangleData();
@@ -344,7 +344,7 @@ void InitBuffer(const char* shapePath)
 		pAttribute, cAttribute);
 }
 
-//--- Ãâ·Â ÇÔ¼ö
+//--- ì¶œë ¥ í•¨ìˆ˜
 GLvoid drawScene()
 {	
 	if (gameMode == MODE_PLAY) view = GetMouseMoveView(glm::vec3(player.x, player.y, player.z));
@@ -352,47 +352,47 @@ GLvoid drawScene()
 	//else                              view = EndCamera();
 	float yaw = GetMouseMoveYaw();
 
-	//--- ¹è°æ»ö ¼³Á¤
+	//--- ë°°ê²½ìƒ‰ ì„¤ì •
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//--- ·»´õ¸µ ÆÄÀÌÇÁ¶óÀÎ¿¡ ¼¼ÀÌ´õ ºÒ·¯¿À±â
+	//--- ë Œë”ë§ íŒŒì´í”„ë¼ì¸ì— ì„¸ì´ë” ë¶ˆëŸ¬ì˜¤ê¸°
 	glUseProgram(shaderProgramID);
 
-	//--- º¯È¯ Çà·Ä °ªÀ» ¹öÅØ½º ¼¼ÀÌ´õ·Î º¸³»±â
+	//--- ë³€í™˜ í–‰ë ¬ ê°’ì„ ë²„í…ìŠ¤ ì„¸ì´ë”ë¡œ ë³´ë‚´ê¸°
 	unsigned int transformLocation = glGetUniformLocation(shaderProgramID, "transform");
 	GLint colorLocation = glGetUniformLocation(shaderProgramID, "overrideColor");
 
-	// Á¶¸í Å°±â/²ô±â
+	// ì¡°ëª… í‚¤ê¸°/ë„ê¸°
 	GLint isLightOn = glGetUniformLocation(shaderProgramID, "LightOn");
-	glUniform1i(isLightOn, 1); // 0 - ²û / 1 - ÄÔ
-	// ÁÖº¯ Á¶¸í
+	glUniform1i(isLightOn, 1); // 0 - ë” / 1 - ì¼¬
+	// ì£¼ë³€ ì¡°ëª…
 	GLint lightColorLocation = glGetUniformLocation(shaderProgramID, "lightColor");
 	GLint ambientStrengthLocation = glGetUniformLocation(shaderProgramID, "ambientStrength");
-	glUniform3f(lightColorLocation, 1.0f, 1.0f, 1.0f); // ºû »ö»ó
-	glUniform1f(ambientStrengthLocation, 0.3f); // ÁÖº¯ °­µµ
-	// »ê¶õ Á¶¸í
+	glUniform3f(lightColorLocation, 1.0f, 1.0f, 1.0f); // ë¹› ìƒ‰ìƒ
+	glUniform1f(ambientStrengthLocation, 0.3f); // ì£¼ë³€ ê°•ë„
+	// ì‚°ëž€ ì¡°ëª…
 	GLint lightPosLocation = glGetUniformLocation(shaderProgramID, "lightPos");
 	GLint diffuseStrengthLocation = glGetUniformLocation(shaderProgramID, "diffuseStrength");
 	GLint modelLocation = glGetUniformLocation(shaderProgramID, "model");
 	GLint normalMatrixLocation = glGetUniformLocation(shaderProgramID, "normalMatrix");
-	glUniform3f(lightPosLocation, 4.0f, 5.0f, -4.0f); // ºû À§Ä¡ / ÇöÀç ¿ì»ó´Ü
-	glUniform1f(diffuseStrengthLocation, 0.5f); // »ê¶õ °­µµ
-	// °Å¿ï Á¶¸í
+	glUniform3f(lightPosLocation, 4.0f, 5.0f, -4.0f); // ë¹› ìœ„ì¹˜ / í˜„ìž¬ ìš°ìƒë‹¨
+	glUniform1f(diffuseStrengthLocation, 0.5f); // ì‚°ëž€ ê°•ë„
+	// ê±°ìš¸ ì¡°ëª…
 	GLint viewPosLocation = glGetUniformLocation(shaderProgramID, "viewPos");
 	GLint specularStrengthLocation = glGetUniformLocation(shaderProgramID, "specularStrength");
 	GLint shininessLocation = glGetUniformLocation(shaderProgramID, "shininess");
 	glm::vec3 viewPos = glm::vec3(glm::inverse(view)[3]);
-	glUniform3fv(viewPosLocation, 1, glm::value_ptr(viewPos)); // Ä«¸Þ¶ó À§Ä¡
-	glUniform1f(specularStrengthLocation, 0.8f); // °Å¿ï °­µµ
-	glUniform1f(shininessLocation, 32.0f); // ¹Ý»ç ¼¼±â / 32, 64, 128
+	glUniform3fv(viewPosLocation, 1, glm::value_ptr(viewPos)); // ì¹´ë©”ë¼ ìœ„ì¹˜
+	glUniform1f(specularStrengthLocation, 0.8f); // ê±°ìš¸ ê°•ë„
+	glUniform1f(shininessLocation, 32.0f); // ë°˜ì‚¬ ì„¸ê¸° / 32, 64, 128
 
 	glm::mat4 proj = projection;
 
-	glm::mat4 mvp;     // µµÇü
-	glm::mat4 mvpAxis = proj * view * centerMat; // Ãà
-	glm::mat4 model; // ºû °è»êÀ» À§ÇÑ ¸ðµ¨ / »ê¶õ
-	glm::mat3 normalMat; // ºû °è»êÀ» À§ÇÑ ¹ý¼± Çà·Ä / »ê¶õ
+	glm::mat4 mvp;     // ë„í˜•
+	glm::mat4 mvpAxis = proj * view * centerMat; // ì¶•
+	glm::mat4 model; // ë¹› ê³„ì‚°ì„ ìœ„í•œ ëª¨ë¸ / ì‚°ëž€
+	glm::mat3 normalMat; // ë¹› ê³„ì‚°ì„ ìœ„í•œ ë²•ì„  í–‰ë ¬ / ì‚°ëž€
 
 	glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
@@ -401,7 +401,7 @@ GLvoid drawScene()
 
 	glUniform3f(colorLocation, 1.0f, 1.0f, 1.0f);
 
-	// txt ´ÜÀ§ Å¥ºê
+	// txt ë‹¨ìœ„ íë¸Œ
 	{
 		glBindVertexArray(VAO_o);
 
@@ -417,7 +417,7 @@ GLvoid drawScene()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
 
-	// ¹Ù´Ú ³ÐÀº Æò¸é
+	// ë°”ë‹¥ ë„“ì€ í‰ë©´
 	{
 		glBindVertexArray(VAO_l);
 		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(mvpAxis));

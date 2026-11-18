@@ -1,4 +1,4 @@
-#include "ui.h"
+ï»¿#include "ui.h"
 
 #include <GL/glew.h>
 #include <gl/glm/glm.hpp>
@@ -19,18 +19,18 @@ namespace {
 	GLint uRectLoc = -1;
 	GLint uColorLoc = -1;
 
-	//--- ¼ÎÀÌ´õ ¼Ò½º ÀĞ±â
+	//--- ì…°ì´ë” ì†ŒìŠ¤ ì½ê¸°
 	std::string ReadShader(const char* path)
 	{
 		std::ifstream file(path, std::ios::binary);
 		if (!file.is_open()) {
-			std::cerr << "ERROR: UI ¼ÎÀÌ´õ ÆÄÀÏÀ» ¿­ ¼ö ¾ø½À´Ï´Ù: " << path << "\n";
+			std::cerr << "ERROR: UI ì…°ì´ë” íŒŒì¼ì„ ì—´ ìˆ˜ ì—†ìŠµë‹ˆë‹¤: " << path << "\n";
 			return "";
 		}
 		return std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 	}
 
-	//--- ¼ÎÀÌ´õ ÄÄÆÄÀÏ (½ÇÆĞÇÏ¸é ·Î±× Ãâ·Â)
+	//--- ì…°ì´ë” ì»´íŒŒì¼ (ì‹¤íŒ¨í•˜ë©´ ë¡œê·¸ ì¶œë ¥)
 	GLuint CompileShader(GLenum type, const char* src)
 	{
 		GLuint shader = glCreateShader(type);
@@ -42,17 +42,17 @@ namespace {
 		if (!result) {
 			GLchar log[512];
 			glGetShaderInfoLog(shader, 512, NULL, log);
-			std::cerr << "ERROR: UI ¼ÎÀÌ´õ ÄÄÆÄÀÏ ½ÇÆĞ\n" << log << "\n";
+			std::cerr << "ERROR: UI ì…°ì´ë” ì»´íŒŒì¼ ì‹¤íŒ¨\n" << log << "\n";
 			glDeleteShader(shader);
 			return 0;
 		}
 		return shader;
 	}
 
-	//--- »ç°¢Çü ÇÏ³ª ±×¸®±â (uRect / uColor´Â ÀÌ¹Ì ¼³Á¤µÈ »óÅÂ)
+	//--- ì‚¬ê°í˜• í•˜ë‚˜ ê·¸ë¦¬ê¸° (uRect / uColorëŠ” ì´ë¯¸ ì„¤ì •ëœ ìƒíƒœ)
 	void DrawRect(float x, float y, float w, float h, const glm::vec4& color)
 	{
-		if (w <= 0.0f || h <= 0.0f) return;   // °ÔÀÌÁö°¡ 0ÀÌ¸é ±×¸®Áö ¾Ê´Â´Ù
+		if (w <= 0.0f || h <= 0.0f) return;   // ê²Œì´ì§€ê°€ 0ì´ë©´ ê·¸ë¦¬ì§€ ì•ŠëŠ”ë‹¤
 		glUniform4f(uRectLoc, x, y, w, h);
 		glUniform4fv(uColorLoc, 1, &color.x);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -81,7 +81,7 @@ void InitUI()
 	if (!linked) {
 		GLchar log[512];
 		glGetProgramInfoLog(uiProgramID, 512, NULL, log);
-		std::cerr << "ERROR: UI ¼ÎÀÌ´õ ¸µÅ© ½ÇÆĞ\n" << log << "\n";
+		std::cerr << "ERROR: UI ì…°ì´ë” ë§í¬ ì‹¤íŒ¨\n" << log << "\n";
 		glDeleteProgram(uiProgramID);
 		uiProgramID = 0;
 		return;
@@ -91,7 +91,7 @@ void InitUI()
 	uRectLoc = glGetUniformLocation(uiProgramID, "uRect");
 	uColorLoc = glGetUniformLocation(uiProgramID, "uColor");
 
-	//--- ´ÜÀ§ »ç°¢Çü (0,0) ~ (1,1) µÎ °³ÀÇ »ï°¢Çü
+	//--- ë‹¨ìœ„ ì‚¬ê°í˜• (0,0) ~ (1,1) ë‘ ê°œì˜ ì‚¼ê°í˜•
 	float quad[] = {
 		0.0f, 0.0f,  1.0f, 0.0f,  0.0f, 1.0f,
 		0.0f, 1.0f,  1.0f, 0.0f,  1.0f, 1.0f
@@ -113,7 +113,7 @@ void DrawUI(float screenW, float screenH,
 {
 	if (uiProgramID == 0) return;
 
-	//--- °ÔÀÌÁö ºñÀ² (0 ~ 1)
+	//--- ê²Œì´ì§€ ë¹„ìœ¨ (0 ~ 1)
 	float hpRatio = maxHealth > 0.0f ? health / maxHealth : 0.0f;
 	float mpRatio = maxMana > 0.0f ? mana / maxMana : 0.0f;
 	if (hpRatio < 0.0f) hpRatio = 0.0f;
@@ -128,16 +128,16 @@ void DrawUI(float screenW, float screenH,
 	glUseProgram(uiProgramID);
 	glBindVertexArray(uiVAO);
 
-	//--- È­¸é ÁÂÇ¥°è: ÁÂ»ó´ÜÀÌ (0,0)
+	//--- í™”ë©´ ì¢Œí‘œê³„: ì¢Œìƒë‹¨ì´ (0,0)
 	glm::mat4 proj = glm::ortho(0.0f, screenW, screenH, 0.0f);
 	glUniformMatrix4fv(uProjLoc, 1, GL_FALSE, glm::value_ptr(proj));
 
-	// HP: Å×µÎ¸® / ¹è°æ / Ã¤¿ò
+	// HP: í…Œë‘ë¦¬ / ë°°ê²½ / ì±„ì›€
 	DrawRect(16.0f, screenH - 78.0f, 308.0f, 32.0f, glm::vec4(0.90f, 0.90f, 0.90f, 1.0f));
 	DrawRect(20.0f, screenH - 74.0f, 300.0f, 24.0f, glm::vec4(0.10f, 0.10f, 0.10f, 1.0f));
 	DrawRect(20.0f, screenH - 74.0f, 300.0f * hpRatio, 24.0f, glm::vec4(0.85f, 0.12f, 0.12f, 1.0f));
 
-	// MP: Å×µÎ¸® / ¹è°æ / Ã¤¿ò
+	// MP: í…Œë‘ë¦¬ / ë°°ê²½ / ì±„ì›€
 	DrawRect(16.0f, screenH - 40.0f, 308.0f, 24.0f, glm::vec4(0.90f, 0.90f, 0.90f, 1.0f));
 	DrawRect(20.0f, screenH - 36.0f, 300.0f, 16.0f, glm::vec4(0.10f, 0.10f, 0.10f, 1.0f));
 	DrawRect(20.0f, screenH - 36.0f, 300.0f * mpRatio, 16.0f, glm::vec4(0.25f, 0.45f, 0.95f, 1.0f));

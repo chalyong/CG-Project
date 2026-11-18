@@ -1,4 +1,4 @@
-#include "mouse_move.h"
+ï»¿#include "mouse_move.h"
 
 #include <cmath>
 #include <gl/glm/gtc/matrix_transform.hpp>
@@ -21,7 +21,7 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 	int ww, wh;
 	glfwGetWindowSize(window, &ww, &wh);
 
-	// Æ÷ÀÎÅÍ´Â Ç×»ó Áß¾Ó¿¡ ÀÖ´Ù°í °¡Á¤ÇÏ°í Áß¾Ó ±âÁØ ÀÌµ¿·®¸¸ ´©Àû
+	// í¬ì¸í„°ëŠ” í•­ìƒ ì¤‘ì•™ì— ìˆë‹¤ê³  ê°€ì •í•˜ê³  ì¤‘ì•™ ê¸°ì¤€ ì´ë™ëŸ‰ë§Œ ëˆ„ì 
 	mouseDx += xpos - ww / 2.0;
 	mouseDy += wh / 2.0 - ypos;
 }
@@ -49,7 +49,7 @@ void UpdateMouseMove(GLFWwindow* window)
 		yaw += (float)mouseDx * SENS;
 		pitch += (float)mouseDy * SENS;
 
-		// ÁÂ¿ì´Â ¹«Á¦ÇÑ, »óÇÏ´Â ¼öÁ÷ À§/¹Ù´Ú±îÁö
+		// ì¢Œìš°ëŠ” ë¬´ì œí•œ, ìƒí•˜ëŠ” ìˆ˜ì§ ìœ„/ë°”ë‹¥ê¹Œì§€
 		yaw = fmodf(yaw, TWO_PI);
 		pitch = glm::clamp(pitch, -PITCH_LIMIT, PITCH_LIMIT);
 	}
@@ -69,30 +69,30 @@ float GetMouseMoveYaw()
 
 glm::mat4 GetMouseMoveView(const glm::vec3& playerPosition)
 {
-	//--- 3ÀÎÄª Ä«¸Ş¶ó ¿ÀÇÁ¼Â (ÇÃ·¹ÀÌ¾î ±âÁØ)
-	const float EYE_RIGHT = 0.0f;   // È­¸é ¿À¸¥ÂÊ x
-	const float EYE_UP = 3.5f;   // ´« ³ôÀÌ y
-	const float EYE_BACK = 8.0f;   // µÚÂÊ °Å¸® -z
-	const float TARGET_UP = 0.2f;   // Ä³¸¯ÅÍ¸¦ º¸´Â ³ôÀÌ
+	//--- 3ì¸ì¹­ ì¹´ë©”ë¼ ì˜¤í”„ì…‹ (í”Œë ˆì´ì–´ ê¸°ì¤€)
+	const float EYE_RIGHT = 0.0f;   // í™”ë©´ ì˜¤ë¥¸ìª½ x
+	const float EYE_UP = 3.5f;   // ëˆˆ ë†’ì´ y
+	const float EYE_BACK = 8.0f;   // ë’¤ìª½ ê±°ë¦¬ -z
+	const float TARGET_UP = 0.2f;   // ìºë¦­í„°ë¥¼ ë³´ëŠ” ë†’ì´
 
 	float cp = cosf(pitch), sp = sinf(pitch);
 	float cy = cosf(yaw), sy = sinf(yaw);
 
-	// yaw ±âÁØ ÀÌµ¿ Ãà (player.cpp¿Í µ¿ÀÏ ±Ô¾à)
+	// yaw ê¸°ì¤€ ì´ë™ ì¶• (player.cppì™€ ë™ì¼ ê·œì•½)
 	glm::vec3 forward(-sy, 0.0f, cy);
 	glm::vec3 right(-cy, 0.0f, -sy);
 
-	// yaw·Î È¸ÀüÇÏ´Â eye À§Ä¡
+	// yawë¡œ íšŒì „í•˜ëŠ” eye ìœ„ì¹˜
 	glm::vec3 pivot = playerPosition + glm::vec3(0.0f, EYE_UP, 0.0f);
 	glm::vec3 eye = pivot
 		+ right * EYE_RIGHT
 		- forward * (EYE_BACK * cp)
 		- glm::vec3(0.0f, EYE_BACK * sp, 0.0f);
 
-	// Ä³¸¯ÅÍ¸¦ ¹Ù¶óº¸´Â ¸ñÇ¥Á¡
+	// ìºë¦­í„°ë¥¼ ë°”ë¼ë³´ëŠ” ëª©í‘œì 
 	glm::vec3 target = playerPosition + glm::vec3(0.0f, TARGET_UP, 0.0f);
 
-	// ¶¥À» ¶ÕÁö ¾Ê°Ô (pitch À§ÂÊ ÇÑ°è º¸Á¶)
+	// ë•…ì„ ëš«ì§€ ì•Šê²Œ (pitch ìœ„ìª½ í•œê³„ ë³´ì¡°)
 	if (eye.y < 0.3f) eye.y = 0.3f;
 
 	return glm::lookAt(eye, target, glm::vec3(0.0f, 1.0f, 0.0f));

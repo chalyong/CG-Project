@@ -1,4 +1,4 @@
-#include "player.h"
+﻿#include "player.h"
 #include <cmath>
 #include <gl/glm/glm.hpp>
 
