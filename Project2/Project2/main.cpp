@@ -119,6 +119,14 @@ string filetobuf(const char* file)
 
 // 입력 처리 / 콜백
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	//WASD - 이동
+	if (key == GLFW_KEY_W) keyW = (action != GLFW_RELEASE);
+	if (key == GLFW_KEY_S) keyS = (action != GLFW_RELEASE);
+	if (key == GLFW_KEY_A) keyA = (action != GLFW_RELEASE);
+	if (key == GLFW_KEY_D) keyD = (action != GLFW_RELEASE);
+	//SHIFT - 달리기
+	if (key == GLFW_KEY_LEFT_SHIFT) keyShift = (action != GLFW_RELEASE);
+
 	if (gameMode == MODE_TITLE) {
 		//ESC - 종료
 		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GLFW_TRUE);
@@ -126,13 +134,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		if ((key == GLFW_KEY_ENTER || key == GLFW_KEY_SPACE) && action == GLFW_PRESS) pendingStart = true;
 	}
 	if (gameMode == MODE_PLAY) {
-		//WASD - 이동
-		if (key == GLFW_KEY_W) keyW = (action != GLFW_RELEASE);
-		if (key == GLFW_KEY_S) keyS = (action != GLFW_RELEASE);
-		if (key == GLFW_KEY_A) keyA = (action != GLFW_RELEASE);
-		if (key == GLFW_KEY_D) keyD = (action != GLFW_RELEASE);
-		//SHIFT - 달리기
-		if (key == GLFW_KEY_LEFT_SHIFT) keyShift = (action != GLFW_RELEASE);
 		//SPACE - 점프
 		if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
 			player.Jump();
