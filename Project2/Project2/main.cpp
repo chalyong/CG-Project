@@ -36,6 +36,7 @@ GLuint fragmentShader;
 Player player;
 int dir_f, dir_s;
 bool keyW = false, keyS = false, keyA = false, keyD = false;
+bool keyShift = false;
 
 enum GameMode { MODE_TITLE, MODE_PLAY, MODE_END };
 GameMode gameMode = MODE_PLAY; // 현재 게임 모드 / 시작시 TITLE 이어야 하나, 개발 편의상 PLAY로 시작
@@ -130,6 +131,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		if (key == GLFW_KEY_S) keyS = (action != GLFW_RELEASE);
 		if (key == GLFW_KEY_A) keyA = (action != GLFW_RELEASE);
 		if (key == GLFW_KEY_D) keyD = (action != GLFW_RELEASE);
+		//SHIFT - 달리기
+		if (key == GLFW_KEY_LEFT_SHIFT) keyShift = (action != GLFW_RELEASE);
 		//SPACE - 점프
 		if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
 			player.Jump();
@@ -256,7 +259,10 @@ int main(int argc, char** argv)
 				dir_s = (keyD ? 1 : 0) - (keyA ? 1 : 0);
 			}
 
+			// 이동, 마나 등 업데이트
+			player.moveSpeed = keyShift ? 6.0f : 3.0f;
 			player.Update(dir_f, dir_s, GetMouseMoveYaw(), dt);
+			// 게임 오버 조건
 			if (player.health <= 0.0f) pendingGameOver = true;
 		}
 
