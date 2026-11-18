@@ -1,20 +1,20 @@
-#pragma once
+ï»¿#pragma once
 
 class Player
 {
 public:
 	Player();
 
-	// ÃÖ´ë Ã¼·Â / ÇöÀç Ã¼·Â
+	// ìµœëŒ€ ì²´ë ¥ / í˜„ìž¬ ì²´ë ¥
 	float maxHealth;
 	float health;
 
-	// ÃÖ´ë ¸¶³ª / ÇöÀç ¸¶³ª / ¸¶³ª È¸º¹·®
+	// ìµœëŒ€ ë§ˆë‚˜ / í˜„ìž¬ ë§ˆë‚˜ / ë§ˆë‚˜ íšŒë³µëŸ‰
 	float maxMana;
 	float mana;
 	float manaRegen;
 
-	// À§Ä¡
+	// ìœ„ì¹˜
 	float x, y, z;
 	float moveSpeed;
 	void Move(int dirF, int dirS, float yaw, float deltaTime);

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <GL/glfw3.h>
 #include <gl/glm/glm.hpp>

@@ -1,6 +1,6 @@
-#pragma once
+ï»¿#pragma once
 
-//--- HP / MP µî 2D ÀÎÅÍÆäÀÌ½º(È­¸é °íÁ¤ ¿À¹ö·¹ÀÌ)
+//--- HP / MP ë“± 2D ì¸í„°í˜ì´ìŠ¤(í™”ë©´ ê³ ì • ì˜¤ë²„ë ˆì´)
 void InitUI();
 void DrawUI(float screenW, float screenH,
 	float health, float maxHealth,
