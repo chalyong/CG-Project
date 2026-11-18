@@ -43,7 +43,7 @@ bool pendingStart = false;   // TITLE, END	-> PLAY 요청
 bool pendingTitle = false;   // END, PLAY	-> TITLE 요청
 bool pendingGameOver = false; // PLAY -> END 요청
 
-GLuint VAO_l, VBO_lD, VBO_lC;
+GLuint VAO_l, VBO_lD, VBO_lC, VBO_lN;
 float lData[] = {
 100.0f, -1.0f, 100.0f,
 100.0f, -1.0f, -100.0f,
@@ -62,6 +62,14 @@ float lCr[] = {
 0.0f, 0.8f, 0.0f,
 0.0f, 0.8f, 0.0f
 };
+float lNrm[] = {
+	0.0f, 1.0f, 0.0f,
+	0.0f, 1.0f, 0.0f,
+	0.0f, 1.0f, 0.0f,
+	0.0f, 1.0f, 0.0f,
+	0.0f, 1.0f, 0.0f,
+	0.0f, 1.0f, 0.0f
+};
 int lCnt = 18;
 
 GLuint VAO_o, VBO_oD, VBO_oC, VBO_oN;
@@ -78,6 +86,8 @@ crBl[3] = { 0.0f, 0.0f, 0.0f };
 
 int mx, my;
 int clicked;
+
+glm::vec3 lightPos(50.0f, 50.0f, 50.0f);
 
 // 투영 행렬 제작
 glm::mat4 projection = glm::perspective(
@@ -349,7 +359,8 @@ void InitBuffer(const char* shapePath)
 	uploadBuffer(VAO_l, VBO_lD, VBO_lC,
 		lData, sizeof(lData) / sizeof(float),
 		lCr, sizeof(lCr) / sizeof(float),
-		pAttribute, cAttribute);
+		pAttribute, cAttribute,
+		&VBO_lN, lNrm, sizeof(lNrm) / sizeof(float), nAttribute);
 }
 
 //--- 출력 함수
@@ -384,7 +395,7 @@ GLvoid drawScene()
 	GLint diffuseStrengthLocation = glGetUniformLocation(shaderProgramID, "diffuseStrength");
 	GLint modelLocation = glGetUniformLocation(shaderProgramID, "model");
 	GLint normalMatrixLocation = glGetUniformLocation(shaderProgramID, "normalMatrix");
-	glUniform3f(lightPosLocation, 4.0f, 5.0f, -4.0f); // 빛 위치 / 현재 우상단
+	glUniform3f(lightPosLocation, lightPos.x, lightPos.y, lightPos.z); // 빛 위치
 	glUniform1f(diffuseStrengthLocation, 0.5f); // 산란 강도
 	// 거울 조명
 	GLint viewPosLocation = glGetUniformLocation(shaderProgramID, "viewPos");
@@ -428,6 +439,10 @@ GLvoid drawScene()
 	// 바닥 넓은 평면
 	{
 		glBindVertexArray(VAO_l);
+		model = centerMat;
+		normalMat = glm::transpose(glm::inverse(glm::mat3(model)));
+		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix3fv(normalMatrixLocation, 1, GL_FALSE, glm::value_ptr(normalMat));
 		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(mvpAxis));
 		glDrawArrays(GL_TRIANGLES, 0, lCnt);
 	}
