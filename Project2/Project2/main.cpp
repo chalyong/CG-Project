@@ -222,6 +222,9 @@ int main(int argc, char** argv)
 		if (dt > 0.1f) dt = 0.1f;
 
 		bool focused = glfwGetWindowAttrib(window, GLFW_FOCUSED) != 0;
+		if (!focused) {              // 창이 포커스를 잃으면 눌린 키 해제
+			keyW = keyS = keyA = keyD = false;
+		}
 
 		if (gameMode == MODE_PLAY) {
 			int dir_f = 0, dir_s = 0;
@@ -234,6 +237,8 @@ int main(int argc, char** argv)
 
 			player.mana += player.manaRegen * dt;
 			if (player.mana > player.maxMana) player.mana = player.maxMana;
+
+			if (player.health <= 0.0f) pendingGameOver = true;
 		}
 
 		drawScene();
