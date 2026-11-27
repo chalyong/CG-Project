@@ -2,10 +2,6 @@
 #include <cmath>
 #include <gl/glm/glm.hpp>
 
-static constexpr float GRAVITY = 18.0f;
-static constexpr float JUMP_POWER = 7.0f;
-static constexpr float GROUND_Y = 0.0f;
-
 Player::Player()
 	: maxHealth(100.0f), health(100.0f)
 	, maxMana(60.0f), mana(0.0f), manaRegen(2.0f)

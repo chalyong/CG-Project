@@ -17,6 +17,12 @@ public:
 	// 위치
 	float x, y, z;
 	float moveSpeed;
+	//--- 물리 상수
+	static constexpr float GRAVITY = 18.0f;
+	static constexpr float JUMP_POWER = 7.0f;
+	static constexpr float GROUND_Y = 0.0f;
+	static constexpr float JUMP_HEIGHT = JUMP_POWER * JUMP_POWER / (2.0f * GRAVITY);   // 점프 최고 높이 (약 1.36)
+
 	float vy; // 수직 속도
 
 	// 함수

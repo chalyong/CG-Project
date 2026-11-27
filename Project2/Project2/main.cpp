@@ -14,6 +14,7 @@
 #include "mouse_move.h"
 #include "player.h"
 #include "ui.h"
+#include "blocks.h"
 
 using namespace std;
 
@@ -285,6 +286,9 @@ int main(int argc, char** argv)
 	glViewport(0, 0, width, height);
 	projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 
+	//--- 랜덤 블럭 소환
+	InitBlocks(50);
+
 	//--- 콜백 함수 등록
 	glfwSetKeyCallback(window, KeyCallback);
 	glfwSetMouseButtonCallback(window, MouseButtonCallback);
@@ -529,6 +533,21 @@ GLvoid drawScene()
 		glDrawArrays(GL_TRIANGLES, 0, lCnt);
 	}
 
+	//--- 랜덤 블럭 (바닥 위에 배치, 높이는 점프 높이 2배 이하)
+	{
+		glBindVertexArray(VAO_o);
+		glUniform3f(colorLocation, 0.55f, 0.70f, 0.95f);   // 블럭용 파랑빛 틴트
+		for (const Block& b : GetBlocks()) {
+			model = glm::translate(glm::mat4(1.0f), glm::vec3(b.x, b.y, b.z))
+				* glm::scale(glm::mat4(1.0f), glm::vec3(b.w, b.h, b.d));
+			normalMat = glm::transpose(glm::inverse(glm::mat3(model)));
+			mvp = proj * view * model;
+			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
+			glUniformMatrix3fv(normalMatrixLocation, 1, GL_FALSE, glm::value_ptr(normalMat));
+			glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(mvp));
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+	}
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
 	switch (gameMode) {
