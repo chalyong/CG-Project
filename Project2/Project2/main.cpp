@@ -157,6 +157,33 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 }
 
 void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+	//--- UI 버튼 클릭 (마우스 좌클릭)
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+		double px = 0.0, py = 0.0;
+		glfwGetCursorPos(window, &px, &py);
+
+		// 창 좌표 -> 프레임버퍼(UI) 좌표 보정 (DPI 스케일 차이 대비)
+		int winW = 0, winH = 0;
+		glfwGetWindowSize(window, &winW, &winH);
+		if (winW > 0 && winH > 0) {
+			px = px * (double)width / (double)winW;
+			py = py * (double)height / (double)winH;
+		}
+
+		if (gameMode == MODE_TITLE) {
+			pendingStart = true;            // 타이틀: 아무 곳이나 클릭 -> 게임 시작
+		}
+		else if (gameMode == MODE_END) {
+			// retry 버튼 영역 (DrawEndScreen과 같은 좌표)
+			double rx = ((double)width - 512.0) * 0.5;
+			double ry = 700.0;
+			if (px >= rx && px <= rx + 512.0 && py >= ry && py <= ry + 128.0) {
+				pendingStart = true;        // 엔드: retry 클릭 -> 게임 시작
+			}
+		}
+	}
+
+
 	if (button == GLFW_MOUSE_BUTTON_LEFT)
 	{
 		double x, y;
