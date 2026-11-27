@@ -16,3 +16,6 @@ void DrawImage(float x, float y, float w, float h, unsigned int texture);
 //--- 모드별 화면
 void DrawTitleScreen(float screenW, float screenH);
 void DrawEndScreen(float screenW, float screenH, bool clear);
+
+//--- 모드 전환 페이드 (검은 전면)
+void DrawFade(float screenW, float screenH, float alpha);

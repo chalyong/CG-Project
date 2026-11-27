@@ -246,3 +246,14 @@ void DrawEndScreen(float w, float h, bool clear)
 	DrawImage((w - 512.0f) * 0.5f, 700.0f, 512.0f, 128.0f, texRetry);
 	EndUI();
 }
+
+//--- 모드 전환 페이드 (검은 전면)
+void DrawFade(float screenW, float screenH, float alpha)
+{
+	if (uiProgramID == 0 || alpha <= 0.0f) return;
+	if (alpha > 1.0f) alpha = 1.0f;
+
+	BeginUI(screenW, screenH);
+	DrawRect(0.0f, 0.0f, screenW, screenH, glm::vec4(0.0f, 0.0f, 0.0f, alpha));
+	EndUI();
+}

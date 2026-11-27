@@ -43,6 +43,8 @@ GameMode gameMode = MODE_PLAY; // 현재 게임 모드 / 시작시 TITLE 이어�
 bool pendingStart = false;   // TITLE, END	-> PLAY 요청
 bool pendingTitle = false;   // END, PLAY	-> TITLE 요청
 bool pendingGameOver = false; // PLAY -> END 요청
+float fadeAlpha = 0.0f;        // 모드 전환 페이드 (1 = 검은 화면)
+const float FADE_SPEED = 2.0f; // 초당 알파 감소 (0.5초에 완전 투명)
 
 GLuint VAO_l, VBO_lD, VBO_lC, VBO_lN;
 float lData[] = {
@@ -275,6 +277,11 @@ int main(int argc, char** argv)
 		prevTime = now;
 		if (dt > 0.1f) dt = 0.1f;
 
+		if (fadeAlpha > 0.0f) {
+			fadeAlpha -= FADE_SPEED * dt;
+			if (fadeAlpha < 0.0f) fadeAlpha = 0.0f;
+		}
+
 		bool focused = glfwGetWindowAttrib(window, GLFW_FOCUSED) != 0;
 		if (!focused) {              // 창이 포커스를 잃으면 눌린 키 해제
 			keyW = keyS = keyA = keyD = false;
@@ -300,16 +307,19 @@ int main(int argc, char** argv)
 		if (pendingStart) {
 			ResetGame();
 			gameMode = MODE_PLAY;
+			fadeAlpha = 1.0f;
 			pendingStart = false;
 		}
 		// 게임 모드에서 게임 오버로 이동
 		if (pendingGameOver) {
 			gameMode = MODE_END;
+			fadeAlpha = 1.0f;
 			pendingGameOver = false;
 		}
 		// 게임 모드, 게임 오버에서 타이틀로 이동
 		if (pendingTitle) {
 			gameMode = MODE_TITLE;
+			fadeAlpha = 1.0f;
 			pendingTitle = false;
 		}
 
@@ -502,5 +512,10 @@ GLvoid drawScene()
 	case MODE_END:   
 		DrawEndScreen((float)width, (float)height, false);
 		break;
+	}
+
+	//--- 모드 전환 페이드 (UI 위에 덮어씀)
+	if (fadeAlpha > 0.0f) {
+		DrawFade((float)width, (float)height, fadeAlpha);
 	}
 }
