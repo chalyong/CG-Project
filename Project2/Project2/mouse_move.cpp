@@ -104,3 +104,9 @@ void ResetMouseMove()
 	pitch = 0.0f;
 	mouseDx = mouseDy = 0.0;
 }
+
+//--- 커서 이동량만 버린다 (타이틀/엔드에서 잔여 드리프트 방지)
+void ClearMouseMoveDelta()
+{
+	mouseDx = mouseDy = 0.0;
+}

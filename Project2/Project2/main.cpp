@@ -172,6 +172,22 @@ void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 
 }
 
+//--- 창/프레임버퍼 크기 변경 콜백
+void ResizeCallback(GLFWwindow* window, int w, int h)
+{
+	if (w <= 0 || h <= 0) return;   // 최소화 상태는 무시
+
+	width = w;
+	height = h;
+	glViewport(0, 0, w, h);
+
+	//--- 원근 투영의 화면 비율 갱신
+	projection = glm::perspective(
+		glm::radians(45.0f),
+		(float)width / (float)height,
+		0.1f, 100.0f);
+}
+
 void ResetGame() {
 	player.Reset();
 	ResetMouseMove();
@@ -231,9 +247,15 @@ int main(int argc, char** argv)
 
 	InitUI();
 
+	//--- 초기 프레임버퍼 크기로 뷰포트/투영 갱신
+	glfwGetFramebufferSize(window, &width, &height);
+	glViewport(0, 0, width, height);
+	projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
+
 	//--- 콜백 함수 등록
 	glfwSetKeyCallback(window, KeyCallback);
 	glfwSetMouseButtonCallback(window, MouseButtonCallback);
+	glfwSetFramebufferSizeCallback(window, ResizeCallback);
 	InitMouseMove(window);
 
 	//--- 렌더링 루프
@@ -241,7 +263,12 @@ int main(int argc, char** argv)
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
-		UpdateMouseMove(window);
+		if (gameMode == MODE_PLAY) {
+			UpdateMouseMove(window);        // PLAY에서만 커서를 중앙에 고정
+		}
+		else {
+			ClearMouseMoveDelta();          // TITLE/END: 커서는 자유, 잔여 이동량은 버림
+		}
 
 		double now = glfwGetTime();
 		float dt = (float)(now - prevTime);

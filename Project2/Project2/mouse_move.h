@@ -8,3 +8,4 @@ void UpdateMouseMove(GLFWwindow* window);
 float GetMouseMoveYaw();
 glm::mat4 GetMouseMoveView(const glm::vec3& eyePosition);
 void ResetMouseMove();
+void ClearMouseMoveDelta();
