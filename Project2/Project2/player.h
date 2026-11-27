@@ -23,7 +23,8 @@ public:
 	static constexpr float GROUND_Y = 0.0f;
 	static constexpr float JUMP_HEIGHT = JUMP_POWER * JUMP_POWER / (2.0f * GRAVITY);   // 점프 최고 높이 (약 1.36)
 
-	float vy; // 수직 속도
+	float vy;
+	bool onGround;   // 지면/발판 위에 있는지 // 수직 속도
 
 	// 함수
 	void Move(int dirF, int dirS, float yaw, float deltaTime);

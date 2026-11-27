@@ -7,7 +7,6 @@
 namespace {
 	std::vector<Block> g_blocks;
 
-	const float FLOOR_Y = -1.0f;            // 바닥 표면 높이 (main.cpp lData와 동일)
 	const float MAP_HALF = 60.0f;           // 소환 범위: 중심에서 +-60
 	const float SPAWN_SAFE_RADIUS = 8.0f;   // 시작 지점 주변은 비워둠
 	const int   OVERLAP_RETRY = 20;         // 블럭 겹침 회피 시도 횟수
@@ -65,7 +64,7 @@ void InitBlocks(int count)
 		if (!placed) continue;   // 자리를 못 찾으면 이번 블럭은 건너뜀
 
 		//--- 바닥(y = -1) 위에 설치 (중심 좌표라 높이의 절반만큼 올림)
-		b.y = FLOOR_Y + b.h * 0.5f;
+		b.y = BLOCK_BASE_Y + b.h * 0.5f;   // 바닥 위에 설치 (중심은 높이의 절반)
 
 		g_blocks.push_back(b);
 	}
