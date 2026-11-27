@@ -149,11 +149,16 @@
     <ClInclude Include="buffer.cpp" />
     <ClInclude Include="mouse_move.h" />
     <ClInclude Include="player.h" />
+    <ClInclude Include="stb_image.h" />
     <ClInclude Include="ui.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment3.glsl" />
     <None Include="vertex3.glsl" />
+    <None Include="Image\clear_screen.png" />
+    <None Include="Image\over_screen.png" />
+    <None Include="Image\retry_button.png" />
+    <None Include="Image\title_screen.png" />
     <None Include="fragmentUI.glsl" />
     <None Include="vertexUI.glsl" />
   </ItemGroup>

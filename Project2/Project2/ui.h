@@ -10,6 +10,9 @@ void DrawUI(float screenW, float screenH,
 void DrawBox(float x, float y, float w, float h,
 	float r, float g, float b, float a);
 
+//--- 이미지(텍스처) 사각형 - texture는 OpenGL 텍스처 ID
+void DrawImage(float x, float y, float w, float h, unsigned int texture);
+
 //--- 모드별 화면
 void DrawTitleScreen(float screenW, float screenH);
 void DrawEndScreen(float screenW, float screenH, bool clear);

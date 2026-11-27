@@ -41,6 +41,9 @@
     <ClInclude Include="ui.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment3.glsl">
@@ -53,6 +56,18 @@
       <Filter>소스 파일</Filter>
     </None>
     <None Include="vertexUI.glsl">
+      <Filter>소스 파일</Filter>
+    </None>
+    <None Include="Image\clear_screen.png">
+      <Filter>소스 파일</Filter>
+    </None>
+    <None Include="Image\over_screen.png">
+      <Filter>소스 파일</Filter>
+    </None>
+    <None Include="Image\retry_button.png">
+      <Filter>소스 파일</Filter>
+    </None>
+    <None Include="Image\title_screen.png">
       <Filter>소스 파일</Filter>
     </None>
   </ItemGroup>

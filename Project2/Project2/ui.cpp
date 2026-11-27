@@ -10,14 +10,24 @@
 #include <iterator>
 #include <string>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 namespace {
 	GLuint uiProgramID = 0;
 	GLuint uiVAO = 0;
 	GLuint uiVBO = 0;
 
+	GLuint texTitle = 0;
+	GLuint texClear = 0;
+	GLuint texOver = 0;
+	GLuint texRetry = 0;
+
 	GLint uProjLoc = -1;
 	GLint uRectLoc = -1;
 	GLint uColorLoc = -1;
+	GLint uTexLoc = -1;
+	GLint uUseTexLoc = -1;
 
 	//--- 셰이더 소스 읽기
 	std::string ReadShader(const char* path)
@@ -49,10 +59,36 @@ namespace {
 		return shader;
 	}
 
+	//--- PNG 로드 -> OpenGL 텍스처 (실패 시 0)
+	GLuint LoadTexture(const char* path)
+	{
+		int iw = 0, ih = 0, channels = 0;
+		unsigned char* data = stbi_load(path, &iw, &ih, &channels, 4);
+		if (!data) {
+			std::cerr << "ERROR: image load failed: " << path << " (" << stbi_failure_reason() << ")" << std::endl;
+			return 0;
+		}
+
+		GLuint tex = 0;
+		glGenTextures(1, &tex);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, iw, ih, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		stbi_image_free(data);
+		return tex;
+	}
+
 	//--- 사각형 하나 그리기
 	void DrawRect(float x, float y, float w, float h, const glm::vec4& color)
 	{
 		if (w <= 0.0f || h <= 0.0f) return;   // 게이지가 0이면 그리지 않는다
+		glUniform1i(uUseTexLoc, 0);
 		glUniform4f(uRectLoc, x, y, w, h);
 		glUniform4fv(uColorLoc, 1, &color.x);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -82,6 +118,17 @@ namespace {
 void DrawBox(float x, float y, float w, float h, float r, float g, float b, float a)
 {
 	DrawRect(x, y, w, h, glm::vec4(r, g, b, a));
+}
+
+//--- 이미지(텍스처) 사각형
+void DrawImage(float x, float y, float w, float h, unsigned int texture)
+{
+	if (texture == 0 || w <= 0.0f || h <= 0.0f) return;   // 로드 실패/크기 0이면 그리지 않는다
+	glUniform1i(uUseTexLoc, 1);
+	glUniform4f(uRectLoc, x, y, w, h);
+	glUniform4f(uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+	glBindTexture(GL_TEXTURE_2D, (GLuint)texture);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 void InitUI()
@@ -115,6 +162,15 @@ void InitUI()
 	uProjLoc = glGetUniformLocation(uiProgramID, "uProj");
 	uRectLoc = glGetUniformLocation(uiProgramID, "uRect");
 	uColorLoc = glGetUniformLocation(uiProgramID, "uColor");
+	uTexLoc = glGetUniformLocation(uiProgramID, "uTex");
+	uUseTexLoc = glGetUniformLocation(uiProgramID, "uUseTex");
+	glUniform1i(uTexLoc, 0);   // 텍스처 유닛 0
+
+	//--- UI 이미지 로드
+	texTitle = LoadTexture("Image/title_screen.png");
+	texClear = LoadTexture("Image/clear_screen.png");
+	texOver = LoadTexture("Image/over_screen.png");
+	texRetry = LoadTexture("Image/retry_button.png");
 
 	//--- 단위 사각형 (0,0) ~ (1,1) 두 개의 삼각형
 	float quad[] = {
@@ -129,6 +185,8 @@ void InitUI()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quad), quad, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);   // vTexCoord
+	glEnableVertexAttribArray(1);
 	glBindVertexArray(0);
 }
 
@@ -172,22 +230,8 @@ void DrawTitleScreen(float w, float h)
 {
 	if (uiProgramID == 0) return;
 	BeginUI(w, h);
-
-	DrawBox(0.0f, 0.0f, w, h, 0.05f, 0.06f, 0.10f, 0.75f);        // 반투명 배경(3D가 어둡게 비침)
-
-	DrawBox(w * 0.5f - 320.0f, h * 0.24f, 640.0f, 140.0f,         // 제목 배너
-		0.12f, 0.12f, 0.16f, 0.95f);
-	DrawBox(w * 0.5f - 316.0f, h * 0.24f + 4.0f, 632.0f, 8.0f,    // 배너 상단 액센트
-		0.85f, 0.65f, 0.15f, 1.0f);
-
-	DrawBox(w * 0.5f - 150.0f, h * 0.55f, 300.0f, 80.0f,          // START 버튼(테두리)
-		0.18f, 0.60f, 0.30f, 1.0f);
-	DrawBox(w * 0.5f - 146.0f, h * 0.55f + 4.0f, 292.0f, 72.0f,   // START 버튼(속)
-		0.10f, 0.42f, 0.20f, 1.0f);
-
-	DrawBox(w * 0.5f - 220.0f, h * 0.74f, 440.0f, 44.0f,          // 안내 영역
-		0.0f, 0.0f, 0.0f, 0.55f);
-
+	//--- 타이틀 이미지 전면 배치 (1280x960 원본 크기)
+	DrawImage(0.0f, 0.0f, w, h, texTitle);
 	EndUI();
 }
 
@@ -195,16 +239,10 @@ void DrawEndScreen(float w, float h, bool clear)
 {
 	if (uiProgramID == 0) return;
 	BeginUI(w, h);
+	//--- 클리어 / 게임오버 배너 (1024x512, 상단~중앙)
+	DrawImage((w - 1024.0f) * 0.5f, 140.0f, 1024.0f, 512.0f, clear ? texClear : texOver);
 
-	DrawBox(0.0f, 0.0f, w, h, 0.10f, 0.02f, 0.02f, 0.75f);        // 패배: 붉은 빛
-
-	DrawBox(w * 0.5f - 320.0f, h * 0.30f, 640.0f, 160.0f,         // 결과 배너
-		clear ? 0.10f : 0.35f, clear ? 0.35f : 0.06f, 0.10f, 0.95f);
-
-	DrawBox(w * 0.5f - 150.0f, h * 0.62f, 300.0f, 70.0f,          // 재시작 버튼
-		0.20f, 0.20f, 0.25f, 1.0f);
-	DrawBox(w * 0.5f - 146.0f, h * 0.62f + 4.0f, 292.0f, 62.0f,
-		0.12f, 0.12f, 0.16f, 1.0f);
-
+	//--- retry 버튼 (512x128, 하단 중앙 - 조건 무관)
+	DrawImage((w - 512.0f) * 0.5f, 700.0f, 512.0f, 128.0f, texRetry);
 	EndUI();
 }
