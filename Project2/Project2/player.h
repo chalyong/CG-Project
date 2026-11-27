@@ -24,4 +24,5 @@ public:
 	void Reset();
 	void Jump();
 	void Update(int dirF, int dirS, float yaw, float dt);
+	void UseSkill();
 };

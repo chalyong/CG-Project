@@ -61,3 +61,11 @@ void Player::Update(int dirF, int dirS, float yaw, float dt)
 	if (mana > maxMana) mana = maxMana;
 
 }
+
+void Player::UseSkill()
+{
+	if (mana < maxMana) return;   // 마나가 가득 찬 경우에만 사용 가능
+
+	// TODO: 스킬 내용 작성 예정
+	mana = 0.0f;
+}

@@ -140,6 +140,10 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
 			player.Jump();
 		}
+		//Q - 스킬 (현재: 마나 소모만)
+		if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
+			player.UseSkill();
+		}
 		//ESC - TITLE 화면
 		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) pendingTitle = true;
 	}
@@ -420,8 +424,6 @@ void InitBuffer(const char* shapePath)
 GLvoid drawScene()
 {	
 	if (gameMode == MODE_PLAY) view = GetMouseMoveView(glm::vec3(player.x, player.y, player.z));
-	//else if (gameMode == MODE_TITLE) view = TitleCamera();
-	//else                              view = EndCamera();
 	float yaw = GetMouseMoveYaw();
 
 	//--- 배경색 설정
