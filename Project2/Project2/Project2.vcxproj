@@ -143,6 +143,7 @@
     <ClCompile Include="boss.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mouse_move.cpp" />
+    <ClCompile Include="music.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="blocks.cpp" />
     <ClCompile Include="ui.cpp" />
@@ -151,6 +152,7 @@
     <ClInclude Include="boss.h" />
     <ClInclude Include="buffer.cpp" />
     <ClInclude Include="mouse_move.h" />
+    <ClInclude Include="music.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="blocks.h" />
     <ClInclude Include="stb_image.h" />

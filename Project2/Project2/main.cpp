@@ -16,6 +16,7 @@
 #include "ui.h"
 #include "blocks.h"
 #include "boss.h"
+#include "music.h"
 
 using namespace std;
 
@@ -83,8 +84,7 @@ GLuint VAO_o, VBO_oD, VBO_oC, VBO_oN;
 
 //변환 행렬 제작
 glm::mat4 centerMat(1.0f);
-glm::mat4 modelPlayer = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.25f, 0.0f));
-glm::mat4 sizePlayer = glm::scale(modelPlayer, glm::vec3(0.8f, 1.5f, 0.2f));
+//--- 크기별 파트 표로 대체됨 (sizePlayer 제거)
 
 float crR[3] = { 0.9f, 0.0f, 0.0f }, crG[3] = { 0.0f,0.9f,0.0f }, crB[3] = { 0.0f, 0.0f, 0.9f },
 crC[3] = { 0.0f, 0.9f, 0.9f }, crY[3] = { 0.9f, 0.9f, 0.0f }, crM[3] = { 0.9f, 0.0f, 0.9f },
@@ -144,7 +144,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
 			player.Jump();
 		}
-		//Q - 스킬 (현재: 마나 소모만)
+		//Q - 스킬
 		if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
 			player.UseSkill();
 		}
@@ -282,8 +282,8 @@ int main(int argc, char** argv)
 
 	//--- VAO와 VBO 객체 생성
 	InitBuffer(shapeFile.c_str());
-
 	InitUI();
+	LoadSound();
 
 	//--- 초기 프레임버퍼 크기로 뷰포트/투영 갱신
 	glfwGetFramebufferSize(window, &width, &height);
@@ -301,6 +301,7 @@ int main(int argc, char** argv)
 	InitMouseMove(window);
 
 	//--- 렌더링 루프
+	PlayBGM();
 	double prevTime = glfwGetTime();
 	while (!glfwWindowShouldClose(window))
 	{
@@ -338,7 +339,6 @@ int main(int argc, char** argv)
 			player.moveSpeed = keyShift ? 6.0f : 3.0f;
 			player.Update(dir_f, dir_s, GetMouseMoveYaw(), dt);
 
-			// 보스 업데이트
 			float bossDamage = boss.Update(dt, player.x, player.y, player.z);
 			if (bossDamage > 0.0f) player.TakeDamage(bossDamage);        // 보스 공격 → 플레이어
 			if (boss.IsDead()) pendingGameOver = true;                   // 승리 조건
@@ -464,7 +464,6 @@ void InitBuffer(const char* shapePath)
 GLvoid drawScene()
 {	
 	if (gameMode == MODE_PLAY) view = GetMouseMoveView(glm::vec3(player.x, player.y, player.z));
-	float yaw = GetMouseMoveYaw();
 
 	//--- 배경색 설정
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -519,16 +518,7 @@ GLvoid drawScene()
 	{
 		glBindVertexArray(VAO_o);
 
-		modelPlayer = glm::translate(glm::mat4(1.0f), glm::vec3(player.x, player.y, player.z))
-			* glm::rotate(glm::mat4(1.0f), -yaw, glm::vec3(0.0f, 1.0f, 0.0f));
-
-		model = modelPlayer * sizePlayer;
-		normalMat = glm::transpose(glm::inverse(glm::mat3(model)));
-		mvp = proj * view * model;
-		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix3fv(normalMatrixLocation, 1, GL_FALSE, glm::value_ptr(normalMat));
-		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(mvp));
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		player.Draw(shaderProgramID, proj, view);
 	}
 
 	// 바닥 넓은 평면

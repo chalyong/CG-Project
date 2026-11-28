@@ -1,5 +1,8 @@
 ﻿#pragma once
 
+#include <GL/glew.h>
+#include <gl/glm/glm.hpp>
+
 class Player
 {
 public:
@@ -24,7 +27,10 @@ public:
 	static constexpr float JUMP_HEIGHT = JUMP_POWER * JUMP_POWER / (2.0f * GRAVITY);   // 점프 최고 높이 (약 1.36)
 
 	float vy;
-	bool onGround;   // 지면/발판 위에 있는지 // 수직 속도
+	bool onGround;   // 지면/발판 위에 있는지
+	float yaw;         // 현재 바라보는 방향 (Update에서 갱신)
+	float walkPhase;   // 걷기 스윙 위상
+	float swing;       // 걷기 스윙 진폭 (0 = 정지)
 
 	// 함수
 	void Move(int dirF, int dirS, float yaw, float deltaTime);
@@ -33,4 +39,5 @@ public:
 	void Update(int dirF, int dirS, float yaw, float dt);
 	void UseSkill();
 	void TakeDamage(float amount);
+	void Draw(GLuint mainProgram, const glm::mat4& proj, const glm::mat4& view);
 };

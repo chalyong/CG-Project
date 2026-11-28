@@ -2,6 +2,8 @@
 #include "blocks.h"
 #include <cmath>
 #include <gl/glm/glm.hpp>
+#include <gl/glm/gtc/matrix_transform.hpp>
+#include <gl/glm/gtc/type_ptr.hpp>
 
 namespace {
 	const float FOOT_OFFSET = 1.0f;   // player.y 에서 발까지의 거리 (캐릭터 모델 하단)
@@ -30,7 +32,7 @@ Player::Player()
 	, maxMana(60.0f), mana(0.0f), manaRegen(2.0f)
 	, x(0.0f), y(0.0f), z(0.0f)
 	, moveSpeed(3.0f)
-	, vy(0.0f), onGround(true)
+	, vy(0.0f), onGround(true), yaw(0.0f), walkPhase(0.0f), swing(0.0f)
 {
 }
 
@@ -55,7 +57,10 @@ void Player::Reset()
 	health = maxHealth;      // HP 가득
 	mana = 0;                // MP 0
 	vy = 0.0f;               // 수직 속도 초기화
-	onGround = true;         // 지면 위로 시작
+	onGround = true;
+	yaw = 0.0f;             // 시점 초기화
+	walkPhase = 0.0f;        // 걷기 스윙 초기화
+	swing = 0.0f;         // 지면 위로 시작
 }
 
 void Player::Jump()
@@ -67,6 +72,14 @@ void Player::Jump()
 
 void Player::Update(int dirF, int dirS, float yaw, float dt)
 {
+	this->yaw = yaw;   // Draw용 방향 저장
+
+	//--- 걷기 스윙 갱신 (이동 중에만 진폭 유지)
+	float targetSwing = (dirF != 0 || dirS != 0) ? 1.0f : 0.0f;
+	float swingStep = dt * 10.0f;
+	if (swingStep > 1.0f) swingStep = 1.0f;
+	swing += (targetSwing - swing) * swingStep;
+	if (targetSwing > 0.0f) walkPhase += dt * 10.0f;
 	//--- 수평 이동 (블럭 충돌은 축별로 처리해 미끄러짐 허용)
 	float oldX = x, oldZ = z;
 	float feet = y - FOOT_OFFSET;   // 이동 시점의 발 높이
@@ -116,4 +129,66 @@ void Player::TakeDamage(float amount)
 {
 	health -= amount;
 	if (health < 0.0f) health = 0.0f;
+}
+
+void Player::Draw(GLuint mainProgram, const glm::mat4& proj, const glm::mat4& view)
+{
+	glUseProgram(mainProgram);
+
+	//--- 포즈 각도(도): 다리는 엉덩이, 팔은 어깨 관절 기준
+	float legL, legR, armL, armR;
+	if (!onGround) {
+		legL = 25.0f;  legR = -25.0f;    // 점프: 다리 벌림
+		armL = -25.0f; armR = -25.0f;    // 점프: 팔 앞으로
+	}
+	else {
+		float step = sinf(walkPhase) * swing;
+		legL = 25.0f * step;   legR = -25.0f * step;
+		armL = -20.0f * step;  armR = 20.0f * step;
+	}
+
+	const glm::mat4 I(1.0f);
+	const glm::vec3 AX(1.0f, 0.0f, 0.0f);
+	auto R = [&](float deg, const glm::vec3& axis) { return glm::rotate(I, glm::radians(deg), axis); };
+	auto T = [&](const glm::vec3& v) { return glm::translate(I, v); };
+	auto S = [&](const glm::vec3& v) { return glm::scale(I, v); };
+
+	//--- 룰트: 발 위치 + 방향
+	glm::mat4 root = glm::translate(I, glm::vec3(x, y, z)) * glm::rotate(I, -yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	GLint modelLoc     = glGetUniformLocation(mainProgram, "model");
+	GLint normalLoc    = glGetUniformLocation(mainProgram, "normalMatrix");
+	GLint transformLoc = glGetUniformLocation(mainProgram, "transform");
+	GLint colorLoc     = glGetUniformLocation(mainProgram, "overrideColor");
+	glUniform3f(colorLoc, 1.0f, 1.0f, 1.0f);   // 기본 흰색 (틴트 없음)
+
+	//--- 파트 하나 그리기
+	auto DrawPart = [&](const glm::mat4& local) {
+		glm::mat4 model = root * local;
+		glm::mat3 normalMat = glm::transpose(glm::inverse(glm::mat3(model)));
+		glm::mat4 mvp = proj * view * model;
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix3fv(normalLoc, 1, GL_FALSE, glm::value_ptr(normalMat));
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+	};
+
+	// 머리 / 몸통 (전체 높이 -1.0 ~ +0.5 유지)
+	DrawPart(T(glm::vec3(0.0f, 0.32f, 0.0f)) * S(glm::vec3(0.36f, 0.36f, 0.24f)));
+	DrawPart(T(glm::vec3(0.0f, -0.21f, 0.0f)) * S(glm::vec3(0.52f, 0.68f, 0.24f)));
+
+	// 다리 (엉덩이 pivot y = -0.55, 관절 아래 -0.225 -> 발바닥 -1.0)
+	DrawPart(T(glm::vec3(0.13f, -0.55f, 0.0f)) * R(legL, AX)
+		* T(glm::vec3(0.0f, -0.225f, 0.0f)) * S(glm::vec3(0.20f, 0.45f, 0.20f)));
+	DrawPart(T(glm::vec3(-0.13f, -0.55f, 0.0f)) * R(legR, AX)
+		* T(glm::vec3(0.0f, -0.225f, 0.0f)) * S(glm::vec3(0.20f, 0.45f, 0.20f)));
+
+	// 팔 (어깨 pivot y = 0.10)
+	glm::mat4 shoulderL = T(glm::vec3(0.32f, 0.10f, 0.0f)) * R(armL, AX);
+	glm::mat4 shoulderR = T(glm::vec3(-0.32f, 0.10f, 0.0f)) * R(armR, AX);
+	DrawPart(shoulderL * T(glm::vec3(0.0f, -0.275f, 0.0f)) * S(glm::vec3(0.16f, 0.55f, 0.16f)));
+	DrawPart(shoulderR * T(glm::vec3(0.0f, -0.275f, 0.0f)) * S(glm::vec3(0.16f, 0.55f, 0.16f)));
+
+	// 검 (오른손에 종속, 앞으로 뻗음)
+	DrawPart(shoulderR * T(glm::vec3(0.0f, -0.50f, 0.45f)) * S(glm::vec3(0.08f, 0.14f, 0.85f)));
 }
