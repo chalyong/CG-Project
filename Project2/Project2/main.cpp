@@ -372,6 +372,7 @@ int main(int argc, char** argv)
 
 			if (boss.IsDead()) pendingGameOver = true;                   // 승리 조건
 			if (player.health <= 0.0f) pendingGameOver = true;           // 패배 조건 (기존)
+			}
 		}
 
 		drawScene();
@@ -594,6 +595,7 @@ GLvoid drawScene()
 		break;
 	case MODE_PLAY:  
 		DrawUI((float)width, (float)height, player.health, player.maxHealth, player.mana, player.maxMana); 
+		DrawBossHP((float)width, (float)height, boss.health, boss.maxHealth);
 		break;
 	case MODE_END:   
 		DrawEndScreen((float)width, (float)height, boss.IsDead());   // true=클리어 / false=패배

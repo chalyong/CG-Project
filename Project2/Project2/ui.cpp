@@ -94,6 +94,50 @@ namespace {
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 
+	//--- 7세그먼트 숫자 (a,b,c,d,e,f,g)
+	const bool SEG[10][7] = {
+		{ true,  true,  true,  true,  true,  true,  false }, // 0
+		{ false, true,  true,  false, false, false, false }, // 1
+		{ true,  true,  false, true,  true,  false, true  }, // 2
+		{ true,  true,  true,  true,  false, false, true  }, // 3
+		{ false, true,  true,  false, false, true,  true  }, // 4
+		{ true,  false, true,  true,  false, true,  true  }, // 5
+		{ true,  false, true,  true,  true,  true,  true  }, // 6
+		{ true,  true,  true,  false, false, false, false }, // 7
+		{ true,  true,  true,  true,  true,  true,  true  }, // 8
+		{ true,  true,  true,  true,  false, true,  true  }, // 9
+	};
+
+	void DrawDigit(float x, float y, float H, int d, const glm::vec4& color)
+	{
+		if (d < 0 || d > 9) return;
+		const float t = H * 0.16f;          // 세그먼트 두께
+		const float W = H * 0.62f;          // 숫자 폭
+		const float topLen = (H - t) * 0.5f;
+		const float botY = y + (H + t) * 0.5f;
+		const bool* s = SEG[d];
+
+		if (s[0]) DrawRect(x, y, W, t, color);                            // a (위)
+		if (s[6]) DrawRect(x, y + (H - t) * 0.5f, W, t, color);           // g (가운데)
+		if (s[3]) DrawRect(x, y + H - t, W, t, color);                    // d (아래)
+		if (s[5]) DrawRect(x, y, t, topLen, color);                       // f (왼위)
+		if (s[1]) DrawRect(x + W - t, y, t, topLen, color);               // b (오른위)
+		if (s[4]) DrawRect(x, botY, t, topLen, color);                    // e (왼아래)
+		if (s[2]) DrawRect(x + W - t, botY, t, topLen, color);            // c (오른아래)
+	}
+
+	void DrawNumber(float centerX, float y, float H, int value, const glm::vec4& color)
+	{
+		if (value < 0) value = 0;
+		std::string str = std::to_string(value);
+		const float W = H * 0.62f;
+		const float gap = H * 0.30f;
+		float total = (float)str.size() * W + (float)(str.size() - 1) * gap;
+		float sx = centerX - total * 0.5f;
+		for (size_t i = 0; i < str.size(); ++i)
+			DrawDigit(sx + (float)i * (W + gap), y, H, str[i] - '0', color);
+	}
+
 	void BeginUI(float screenW, float screenH)
 	{
 		if (uiProgramID == 0) return;
@@ -257,5 +301,36 @@ void DrawFade(float screenW, float screenH, float alpha)
 
 	BeginUI(screenW, screenH);
 	DrawRect(0.0f, 0.0f, screenW, screenH, glm::vec4(0.0f, 0.0f, 0.0f, alpha));
+	EndUI();
+}
+
+//--- 보스 HP (화면 12시, 가로 80% + 위에 수치)
+void DrawBossHP(float screenW, float screenH, float bossHealth, float bossMaxHealth)
+{
+	if (uiProgramID == 0 || bossMaxHealth <= 0.0f) return;
+
+	float ratio = bossHealth / bossMaxHealth;
+	if (ratio < 0.0f) ratio = 0.0f;
+	if (ratio > 1.0f) ratio = 1.0f;
+
+	const float barW = screenW * 0.8f;          // 가로 80%
+	const float barH = 26.0f;
+	const float x = (screenW - barW) * 0.5f;    // 12시(가운데) 정렬
+	const float yBar = 54.0f;
+	const float numH = 30.0f;
+	const float yNum = 14.0f;
+
+	BeginUI(screenW, screenH);
+
+	// 수치 배경판 (하늘이 밝아도 읽히도록)
+	DrawRect(x, yNum - 4.0f, barW, numH + 8.0f, glm::vec4(0.0f, 0.0f, 0.0f, 0.55f));
+	// 수치 (가운데 정렬)
+	DrawNumber(x + barW * 0.5f, yNum, numH, (int)(bossHealth + 0.5f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+	// HP 바: 테두리 / 배경 / 채움
+	DrawRect(x - 3.0f, yBar - 3.0f, barW + 6.0f, barH + 6.0f, glm::vec4(0.90f, 0.90f, 0.90f, 1.0f));
+	DrawRect(x, yBar, barW, barH, glm::vec4(0.10f, 0.10f, 0.10f, 1.0f));
+	DrawRect(x, yBar, barW * ratio, barH, glm::vec4(0.85f, 0.12f, 0.12f, 1.0f));
+
 	EndUI();
 }

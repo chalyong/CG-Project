@@ -19,3 +19,6 @@ void DrawEndScreen(float screenW, float screenH, bool clear);
 
 //--- 모드 전환 페이드 (검은 전면)
 void DrawFade(float screenW, float screenH, float alpha);
+
+//--- 보스 HP (화면 12시, 가로 80% + 위에 수치)
+void DrawBossHP(float screenW, float screenH, float bossHealth, float bossMaxHealth);
