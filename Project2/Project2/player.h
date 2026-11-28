@@ -32,4 +32,5 @@ public:
 	void Jump();
 	void Update(int dirF, int dirS, float yaw, float dt);
 	void UseSkill();
+	void TakeDamage(float amount);
 };

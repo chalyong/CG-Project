@@ -15,6 +15,7 @@
 #include "player.h"
 #include "ui.h"
 #include "blocks.h"
+#include "boss.h"
 
 using namespace std;
 
@@ -38,6 +39,8 @@ Player player;
 int dir_f, dir_s;
 bool keyW = false, keyS = false, keyA = false, keyD = false;
 bool keyShift = false;
+
+SwordBoss boss;
 
 enum GameMode { MODE_TITLE, MODE_PLAY, MODE_END };
 GameMode gameMode = MODE_PLAY; // 현재 게임 모드 / 시작시 TITLE 이어야 하나, 개발 편의상 PLAY로 시작
@@ -288,6 +291,7 @@ int main(int argc, char** argv)
 
 	//--- 랜덤 블럭 소환
 	InitBlocks(50);
+	boss.Init(shaderProgramID);
 
 	//--- 콜백 함수 등록
 	glfwSetKeyCallback(window, KeyCallback);
@@ -332,8 +336,12 @@ int main(int argc, char** argv)
 			// 이동, 마나 등 업데이트
 			player.moveSpeed = keyShift ? 6.0f : 3.0f;
 			player.Update(dir_f, dir_s, GetMouseMoveYaw(), dt);
-			// 게임 오버 조건
-			if (player.health <= 0.0f) pendingGameOver = true;
+
+			// 보스 업데이트
+			float bossDamage = boss.Update(dt, player.x, player.y, player.z);
+			if (bossDamage > 0.0f) player.TakeDamage(bossDamage);        // 보스 공격 → 플레이어
+			if (boss.IsDead()) pendingGameOver = true;                   // 승리 조건
+			if (player.health <= 0.0f) pendingGameOver = true;           // 패배 조건 (기존)
 		}
 
 		drawScene();

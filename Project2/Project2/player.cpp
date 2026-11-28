@@ -111,3 +111,9 @@ void Player::UseSkill()
 	// TODO: 스킬 내용 작성 예정
 	mana = 0.0f;
 }
+
+void Player::TakeDamage(float amount)
+{
+	health -= amount;
+	if (health < 0.0f) health = 0.0f;
+}
