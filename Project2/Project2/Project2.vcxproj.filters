@@ -30,6 +30,9 @@
     <ClCompile Include="ui.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="boss.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="buffer.cpp">
@@ -48,6 +51,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="stb_image.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="boss.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
