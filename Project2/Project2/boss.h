@@ -28,6 +28,7 @@ public:
 
 	// 플레이어 필살기 등에서 사용
 	void TakeDamage(float amount);
+	void CancelPattern();   // 스킬 등으로 현재 패턴 즉시 취소
 	bool IsDead() const { return state == State::DEAD; }
 
 	float maxHealth;

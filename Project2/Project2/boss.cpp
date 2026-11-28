@@ -24,7 +24,7 @@ namespace {
 	const float PLAYER_FOOT   = 1.0f;   // player.y - 발 높이 (player.cpp FOOT_OFFSET과 동일)
 	const float MAP_LIMIT     = 95.0f;  // 바닥 밖으로 나가지 않도록
 
-	const float CHASE_SPEED   = 2.4f;   // 추격 속도 (플레이어 걷기 3, 달리기 6)
+	const float CHASE_SPEED   = 5.0f;   // 추격 속도 (플레이어 걷기 3, 달리기 6)
 	const float KEEP_DIST     = 2.2f;   // 이 거리 안이면 더 다가가지 않음
 	const float FIRST_DELAY   = 2.0f;   // 시작 후 첫 공격까지 대기
 	const float ATTACK_GAP    = 1.2f;   // 공격 사이 기본 쿨다운
@@ -39,14 +39,14 @@ namespace {
 	const float DASH_DAMAGE   = 25.0f;
 	// 회오리
 	const float WHIRL_RADIUS  = 3.5f;
-	const float WHIRL_SPEED   = 2.2f;   // 회전하며 플레이어 쪽으로 이동
+	const float WHIRL_SPEED   = 4.4f;   // 회전하며 플레이어 쪽으로 이동
 	const float WHIRL_TICK    = 0.4f;   // 다단 히트 간격
 	const float WHIRL_DAMAGE  = 8.0f;   // 틱당 피해
 	const float WHIRL_SPIN    = 900.0f; // 회전 속도 (도/초)
 	// 근접 범위 (점프 후 내려찍기)
 	const float SLAM_RADIUS   = 5.0f;
 	const float SLAM_DAMAGE   = 30.0f;
-	const float SLAM_JUMP_H   = 1.4f;   // 보스가 뛰어오르는 높이
+	const float SLAM_JUMP_H   = 2.6f;   // 보스가 뛰어오르는 높이
 	const float SLAM_DODGE_H  = 0.6f;   // 플레이어 발이 이 높이보다 높으면 회피
 
 	// 파트별 크기
@@ -431,6 +431,13 @@ void SwordBoss::TakeDamage(float amount)
 }
 
 // 패턴 데이터
+void SwordBoss::CancelPattern()
+{
+	if (state == State::DEAD) return;
+	EnterState(State::CHASE);   // 예고/발동/회복 상태 해제
+	cooldown = ATTACK_GAP;      // 바로 재공격하지 않도록 여유
+}
+
 float SwordBoss::PatternTelegraph(Pattern p) const
 {
 	switch (p) {

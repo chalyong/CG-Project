@@ -110,3 +110,11 @@ void ClearMouseMoveDelta()
 {
 	mouseDx = mouseDy = 0.0;
 }
+
+void CenterCursor(GLFWwindow* window)
+{
+	int ww = 0, wh = 0;
+	glfwGetWindowSize(window, &ww, &wh);
+	glfwSetCursorPos(window, ww / 2.0, wh / 2.0);
+	mouseDx = mouseDy = 0.0;
+}

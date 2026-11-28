@@ -1,5 +1,6 @@
 ﻿#include "player.h"
 #include "blocks.h"
+#include "boss.h"
 #include <cmath>
 #include <gl/glm/glm.hpp>
 #include <gl/glm/gtc/matrix_transform.hpp>
@@ -29,10 +30,11 @@ namespace {
 }
 Player::Player()
 	: maxHealth(100.0f), health(100.0f)
-	, maxMana(60.0f), mana(0.0f), manaRegen(2.0f)
+	, maxMana(60.0f), mana(60.0f), manaRegen(2.0f)
 	, x(0.0f), y(0.0f), z(0.0f)
 	, moveSpeed(3.0f)
-	, vy(0.0f), onGround(true), yaw(0.0f), walkPhase(0.0f), swing(0.0f)
+	, vy(0.0f), onGround(true), yaw(0.0f), walkPhase(0.0f), swing(0.0f), spin(0.0f)
+	, skillState(SkillState::NONE), skillTimer(0.0f)
 {
 }
 
@@ -61,6 +63,9 @@ void Player::Reset()
 	yaw = 0.0f;             // 시점 초기화
 	walkPhase = 0.0f;        // 걷기 스윙 초기화
 	swing = 0.0f;         // 지면 위로 시작
+	spin = 0.0f;          // 스킬 회전 초기화
+	skillState = SkillState::NONE;   // 스킬 상태 초기화
+	skillTimer = 0.0f;
 }
 
 void Player::Jump()
@@ -117,12 +122,16 @@ void Player::Update(int dirF, int dirS, float yaw, float dt)
 	if (mana > maxMana) mana = maxMana;
 }
 
-void Player::UseSkill()
+bool Player::UseSkill()
 {
-	if (mana < maxMana) return;   // 마나가 가득 찬 경우에만 사용 가능
+	if (mana < maxMana) return false;                  // 마나가 가득 찬 경우에만 발동
+	if (skillState != SkillState::NONE) return false;  // 이미 시전 중
 
-	// TODO: 스킬 내용 작성 예정
 	mana = 0.0f;
+	skillState = SkillState::FREEZE;
+	skillTimer = 0.0f;
+	spin = 0.0f;
+	return true;
 }
 
 void Player::TakeDamage(float amount)
@@ -154,7 +163,7 @@ void Player::Draw(GLuint mainProgram, const glm::mat4& proj, const glm::mat4& vi
 	auto S = [&](const glm::vec3& v) { return glm::scale(I, v); };
 
 	//--- 룰트: 발 위치 + 방향
-	glm::mat4 root = glm::translate(I, glm::vec3(x, y, z)) * glm::rotate(I, -yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 root = glm::translate(I, glm::vec3(x, y, z)) * glm::rotate(I, glm::radians(spin) - yaw, glm::vec3(0.0f, 1.0f, 0.0f));
 
 	GLint modelLoc     = glGetUniformLocation(mainProgram, "model");
 	GLint normalLoc    = glGetUniformLocation(mainProgram, "normalMatrix");
@@ -191,4 +200,47 @@ void Player::Draw(GLuint mainProgram, const glm::mat4& proj, const glm::mat4& vi
 
 	// 검 (오른손에 종속, 앞으로 뻗음)
 	DrawPart(shoulderR * T(glm::vec3(0.0f, -0.50f, 0.45f)) * S(glm::vec3(0.08f, 0.14f, 0.85f)));
+}
+
+void Player::UpdateSkill(float dt, SwordBoss& boss)
+{
+	if (skillState == SkillState::NONE) return;
+
+	skillTimer += dt;
+
+	//--- FREEZE: 1초간 모든 객체 정지 (갱신은 main에서 생략)
+	if (skillState == SkillState::FREEZE) {
+		if (skillTimer >= SKILL_FREEZE_TIME) {
+			skillState = SkillState::SPIN;
+			skillTimer = 0.0f;
+		}
+		return;
+	}
+
+	//--- SPIN: 캐릭터가 0.5초에 한 바퀴
+	spin = (skillTimer / SKILL_SPIN_TIME) * 360.0f;
+	if (skillTimer >= SKILL_SPIN_TIME) {
+		spin = 0.0f;
+		skillState = SkillState::NONE;
+
+		//--- 범위 공격 판정 (반경 안의 적)
+		float dx = boss.x - x;
+		float dz = boss.z - z;
+		if (dx * dx + dz * dz <= SKILL_RADIUS * SKILL_RADIUS && !boss.IsDead()) {
+			boss.CancelPattern();        // 적의 패턴 취소
+			boss.TakeDamage(SKILL_DAMAGE);   // 60 피해
+		}
+	}
+}
+
+bool Player::IsSkillFrozen() const
+{
+	return skillState == SkillState::FREEZE;
+}
+
+float Player::GetSkillProgress() const
+{
+	if (skillState != SkillState::FREEZE) return 0.0f;
+	float p = skillTimer / SKILL_FREEZE_TIME;
+	return (p > 1.0f) ? 1.0f : p;   // 프레임 오버런 방지 -> 정확히 1바퀴
 }

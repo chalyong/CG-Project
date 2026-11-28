@@ -51,6 +51,9 @@ bool pendingGameOver = false; // PLAY -> END 요청
 float fadeAlpha = 0.0f;        // 모드 전환 페이드 (1 = 검은 화면)
 const float FADE_SPEED = 2.0f; // 초당 알파 감소 (0.5초에 완전 투명)
 
+//--- 스킬 (시간 정지 + 범위 공격)
+bool  skillRequested = false;
+
 GLuint VAO_l, VBO_lD, VBO_lC, VBO_lN;
 float lData[] = {
 100.0f, -1.0f, 100.0f,
@@ -146,7 +149,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		}
 		//Q - 스킬
 		if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
-			player.UseSkill();
+			skillRequested = true;
 		}
 		//ESC - TITLE 화면
 		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) pendingTitle = true;
@@ -225,6 +228,16 @@ void ResizeCallback(GLFWwindow* window, int w, int h)
 		0.1f, 100.0f);
 }
 
+//--- 스킬: 카메라 공전 (정지 1초 동안 플레이어 주위 한 바퀴)
+glm::mat4 SkillCamera(const glm::vec3& playerPos, float progress01)
+{
+	float ang = progress01 * 6.2831853f;
+	const float RADIUS = 8.0f;   // mouse_move.cpp EYE_BACK과 동일
+	const float HEIGHT = 3.5f;   // mouse_move.cpp EYE_UP과 동일
+	glm::vec3 eye = playerPos + glm::vec3(sinf(ang) * RADIUS, HEIGHT, cosf(ang) * RADIUS);
+	glm::vec3 target = playerPos + glm::vec3(0.0f, 0.2f, 0.0f);   // TARGET_UP
+	return glm::lookAt(eye, target, glm::vec3(0.0f, 1.0f, 0.0f));
+}
 void ResetGame() {
 	player.Reset();
 	ResetMouseMove();
@@ -232,6 +245,7 @@ void ResetGame() {
 	dir_f = dir_s = 0;
 	clicked = 0;
 	boss.Reset();
+	skillRequested = false;
 }
 
 //--- 메인 함수
@@ -307,8 +321,11 @@ int main(int argc, char** argv)
 	{
 		glfwPollEvents();
 		UpdateBGM();
-		if (gameMode == MODE_PLAY) {
+		if (gameMode == MODE_PLAY && !player.IsSkillFrozen()) {
 			UpdateMouseMove(window);        // PLAY에서만 커서를 중앙에 고정
+		}
+		else if (gameMode == MODE_PLAY) {
+			CenterCursor(window);           // 스킬 정지 중: 커서만 중앙 유지
 		}
 		else {
 			ClearMouseMoveDelta();          // TITLE/END: 커서는 자유, 잔여 이동량은 버림
@@ -338,10 +355,21 @@ int main(int argc, char** argv)
 
 			// 이동, 마나 등 업데이트
 			player.moveSpeed = keyShift ? 6.0f : 3.0f;
-			player.Update(dir_f, dir_s, GetMouseMoveYaw(), dt);
+			//--- 스킬: 정지 중에는 플레이어/보스 갱신 정지
+			if (skillRequested) {
+				skillRequested = false;
+				player.UseSkill();          // 마나 가득 시 스킬 시작 (실패 시 무시)
+			}
 
-			float bossDamage = boss.Update(dt, player.x, player.y, player.z);
-			if (bossDamage > 0.0f) player.TakeDamage(bossDamage);        // 보스 공격 → 플레이어
+			if (!player.IsSkillFrozen()) {
+				player.Update(dir_f, dir_s, GetMouseMoveYaw(), dt);
+
+				float bossDamage = boss.Update(dt, player.x, player.y, player.z);
+				if (bossDamage > 0.0f) player.TakeDamage(bossDamage);   // 보스 데미지 -> 플레이어
+			}
+
+			player.UpdateSkill(dt, boss);   // 스킬 진행 + 범위 공격
+
 			if (boss.IsDead()) pendingGameOver = true;                   // 승리 조건
 			if (player.health <= 0.0f) pendingGameOver = true;           // 패배 조건 (기존)
 		}
@@ -464,7 +492,12 @@ void InitBuffer(const char* shapePath)
 //--- 출력 함수
 GLvoid drawScene()
 {	
-	if (gameMode == MODE_PLAY) view = GetMouseMoveView(glm::vec3(player.x, player.y, player.z));
+	if (gameMode == MODE_PLAY) {
+		if (player.IsSkillFrozen())
+			view = SkillCamera(glm::vec3(player.x, player.y, player.z), player.GetSkillProgress());
+		else
+			view = GetMouseMoveView(glm::vec3(player.x, player.y, player.z));
+	}
 
 	//--- 배경색 설정
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
