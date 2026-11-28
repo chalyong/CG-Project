@@ -231,6 +231,7 @@ void ResetGame() {
 	keyW = keyS = keyA = keyD = false;
 	dir_f = dir_s = 0;
 	clicked = 0;
+	boss.Reset();
 }
 
 //--- 메인 함수
@@ -571,7 +572,7 @@ GLvoid drawScene()
 		DrawUI((float)width, (float)height, player.health, player.maxHealth, player.mana, player.maxMana); 
 		break;
 	case MODE_END:   
-		DrawEndScreen((float)width, (float)height, false);
+		DrawEndScreen((float)width, (float)height, boss.IsDead());   // true=클리어 / false=패배
 		break;
 	}
 
