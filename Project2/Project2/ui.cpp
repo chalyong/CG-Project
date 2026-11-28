@@ -239,8 +239,10 @@ void DrawEndScreen(float w, float h, bool clear)
 {
 	if (uiProgramID == 0) return;
 	BeginUI(w, h);
-	//--- 클리어 / 게임오버 배너 (1024x512, 상단~중앙)
-	DrawImage((w - 1024.0f) * 0.5f, 140.0f, 1024.0f, 512.0f, clear ? texClear : texOver);
+	//--- 클리어 / 게임오버 배너 (가로 전폭, 원본 1024x512 비율 유지)
+	float bannerH = w * 0.5f;
+	if (bannerH > 640.0f) bannerH = 640.0f;   // retry 버튼과 겹치지 않게 세로 상한
+	DrawImage(0.0f, 40.0f, w, bannerH, clear ? texClear : texOver);
 
 	//--- retry 버튼 (512x128, 하단 중앙 - 조건 무관)
 	DrawImage((w - 512.0f) * 0.5f, 700.0f, 512.0f, 128.0f, texRetry);
