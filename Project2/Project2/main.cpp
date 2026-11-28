@@ -306,6 +306,7 @@ int main(int argc, char** argv)
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
+		UpdateBGM();
 		if (gameMode == MODE_PLAY) {
 			UpdateMouseMove(window);        // PLAY에서만 커서를 중앙에 고정
 		}
