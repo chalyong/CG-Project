@@ -556,6 +556,11 @@ GLvoid drawScene()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 	}
+
+	//--- 보스
+	boss.Draw(shaderProgramID, proj, view);
+	boss.DrawAttackArea(proj, view);
+
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
 	switch (gameMode) {
