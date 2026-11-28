@@ -372,7 +372,6 @@ int main(int argc, char** argv)
 
 			if (boss.IsDead()) pendingGameOver = true;                   // 승리 조건
 			if (player.health <= 0.0f) pendingGameOver = true;           // 패배 조건 (기존)
-			}
 		}
 
 		drawScene();
